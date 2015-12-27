@@ -2,8 +2,9 @@ package com.bitdubai.fermat_android_api.ui.dialogs;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 import com.bitdubai.fermat_android_api.layer.definition.wallet.interfaces.FermatSession;
 import com.bitdubai.fermat_android_api.ui.inflater.ViewInflater;
@@ -11,8 +12,8 @@ import com.bitdubai.fermat_api.layer.all_definition.enums.Engine;
 import com.bitdubai.fermat_api.layer.all_definition.enums.UISource;
 import com.bitdubai.fermat_api.layer.all_definition.navigation_structure.interfaces.FermatScreenSwapper;
 import com.bitdubai.fermat_api.layer.pip_engine.interfaces.ResourceProviderManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedUIExceptionSeverity;
 
 /**
  * Created by Matias Furszyfer on 2015.10.18..
@@ -54,7 +55,7 @@ public abstract class FermatDialog <S extends FermatSession,R extends ResourcePr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            requestWindowFeature(setWindowFeacture());
+            requestWindowFeature(setWindowFeature());
             setContentView(setLayoutId());
         }catch (Exception e){
             getErrorManager().reportUnexpectedUIException(UISource.VIEW, UnexpectedUIExceptionSeverity.CRASH,e);
@@ -62,6 +63,15 @@ public abstract class FermatDialog <S extends FermatSession,R extends ResourcePr
         }
     }
 
+    /**
+     * Send local broadcast
+     *
+     * @param broadcast Intent broadcast with channel and extras
+     */
+    public void sendLocalBroadcast(Intent broadcast) {
+        LocalBroadcastManager.getInstance(getContext())
+                .sendBroadcast(broadcast);
+    }
     /**
      *
      * Set the layout content view
@@ -73,7 +83,7 @@ public abstract class FermatDialog <S extends FermatSession,R extends ResourcePr
      * Window feacture
      * @return
      */
-    protected abstract int setWindowFeacture();
+    protected abstract int setWindowFeature();
 
     /**
      *
@@ -110,5 +120,9 @@ public abstract class FermatDialog <S extends FermatSession,R extends ResourcePr
 
     protected Activity getActivity(){
         return activity;
+    }
+
+    protected void toastDefaultError() {
+        Toast.makeText(getContext(), "Oooops! recovering from system error - ", Toast.LENGTH_SHORT).show();
     }
 }

@@ -21,8 +21,8 @@ import com.bitdubai.fermat_bch_plugin.layer.middleware.crypto_addresses.develope
 import com.bitdubai.fermat_bch_plugin.layer.middleware.crypto_addresses.developer.bitdubai.version_1.utils.CryptoVaultSelector;
 import com.bitdubai.fermat_bch_plugin.layer.middleware.crypto_addresses.developer.bitdubai.version_1.utils.WalletManagerSelector;
 import com.bitdubai.fermat_ccp_api.layer.network_service.crypto_addresses.interfaces.CryptoAddressRequest;
-import com.bitdubai.fermat_cry_api.layer.crypto_module.crypto_address_book.exceptions.CantRegisterCryptoAddressBookRecordException;
-import com.bitdubai.fermat_cry_api.layer.crypto_module.crypto_address_book.interfaces.CryptoAddressBookManager;
+import com.bitdubai.fermat_bch_api.layer.crypto_module.crypto_address_book.exceptions.CantRegisterCryptoAddressBookRecordException;
+import com.bitdubai.fermat_bch_api.layer.crypto_module.crypto_address_book.interfaces.CryptoAddressBookManager;
 import com.bitdubai.fermat_wpd_api.layer.wpd_middleware.wallet_manager.exceptions.CantGetInstalledWalletException;
 import com.bitdubai.fermat_bch_plugin.layer.middleware.crypto_addresses.developer.bitdubai.version_1.exceptions.DefaultWalletNotFoundException;
 import com.bitdubai.fermat_wpd_api.layer.wpd_middleware.wallet_manager.interfaces.InstalledWallet;
@@ -90,10 +90,10 @@ public abstract class CryptoAddressDealer {
         }
     }
 
-    protected final void registerCryptoAddress(final CryptoAddress        cryptoAddress           ,
-                                               final CryptoAddressRequest request                 ,
-                                               final InstalledWallet      installedWallet         ,
-                                               final VaultType            vaultType               ) throws CantRegisterCryptoAddressBookException {
+    protected final void registerCryptoAddress(final CryptoAddress        cryptoAddress  ,
+                                               final CryptoAddressRequest request        ,
+                                               final InstalledWallet      installedWallet,
+                                               final VaultType            vaultType      ) throws CantRegisterCryptoAddressBookException {
 
         try {
 
@@ -130,7 +130,12 @@ public abstract class CryptoAddressDealer {
 
         try {
 
-            InstalledWallet wallet = this.getDefaultWallet(request.getIdentityTypeResponding(), request.getCryptoCurrency(), request.getBlockchainNetworkType(), platform);
+            InstalledWallet wallet = this.getDefaultWallet(
+                    request.getIdentityTypeResponding(),
+                    request.getCryptoCurrency()        ,
+                    request.getBlockchainNetworkType() ,
+                    platform
+            );
 
             final CryptoAddress cryptoAddress = this.getAddress(vaultType, request.getCryptoCurrency());
 

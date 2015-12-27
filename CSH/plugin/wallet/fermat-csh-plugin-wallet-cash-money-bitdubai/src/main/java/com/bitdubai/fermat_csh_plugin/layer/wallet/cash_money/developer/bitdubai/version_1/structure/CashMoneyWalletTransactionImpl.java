@@ -1,9 +1,11 @@
 package com.bitdubai.fermat_csh_plugin.layer.wallet.cash_money.developer.bitdubai.version_1.structure;
 
 import com.bitdubai.fermat_api.layer.all_definition.enums.FiatCurrency;
+import com.bitdubai.fermat_csh_api.all_definition.enums.BalanceType;
 import com.bitdubai.fermat_csh_api.all_definition.enums.TransactionType;
 import com.bitdubai.fermat_csh_api.layer.csh_wallet.interfaces.CashMoneyWalletTransaction;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -16,18 +18,20 @@ public class CashMoneyWalletTransactionImpl implements CashMoneyWalletTransactio
     String publicKeyActor;
     String publicKeyPlugin;
     TransactionType transactionType;
-    float amount;
+    BalanceType balanceType;
+    BigDecimal amount;
     String memo;
     long timestamp;
 
 
     public CashMoneyWalletTransactionImpl(UUID transactionId, String publicKeyWallet, String publicKeyActor, String publicKeyPlugin,
-                                          TransactionType transactionType, float amount, String memo, long timestamp) {
+                                          TransactionType transactionType, BalanceType balanceType, BigDecimal amount, String memo, long timestamp) {
         this.transactionId = transactionId;
         this.publicKeyWallet = publicKeyWallet;
         this.publicKeyActor = publicKeyActor;
         this.publicKeyPlugin = publicKeyPlugin;
         this.transactionType = transactionType;
+        this.balanceType = balanceType;
         this.amount = amount;
         this.memo = memo;
         this.timestamp = timestamp;
@@ -38,6 +42,9 @@ public class CashMoneyWalletTransactionImpl implements CashMoneyWalletTransactio
     public TransactionType getTransactionType() {
         return transactionType;
     }
+
+    @Override
+    public BalanceType getBalanceType() { return this.balanceType; }
 
     @Override
     public long getTimestamp() {
@@ -65,7 +72,7 @@ public class CashMoneyWalletTransactionImpl implements CashMoneyWalletTransactio
     }
 
     @Override
-    public float getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 

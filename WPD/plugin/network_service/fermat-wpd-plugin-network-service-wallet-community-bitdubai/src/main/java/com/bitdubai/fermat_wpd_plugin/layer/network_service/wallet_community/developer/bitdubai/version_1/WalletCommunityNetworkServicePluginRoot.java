@@ -19,7 +19,7 @@ import com.bitdubai.fermat_api.layer.all_definition.network_service.interfaces.N
 import com.bitdubai.fermat_api.layer.all_definition.network_service.interfaces.NetworkServiceConnectionManager;
 import com.bitdubai.fermat_api.layer.all_definition.util.Version;
 import com.bitdubai.fermat_api.layer.osa_android.location_system.Location;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.enums.EventType;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.interfaces.EventManager;
 import com.bitdubai.fermat_wpd_api.layer.wpd_network_service.wallet_community.interfaces.WalletCommunityManager;
@@ -148,7 +148,7 @@ public class WalletCommunityNetworkServicePluginRoot extends AbstractPlugin impl
     }
 
     @Override
-    public DiscoveryQueryParameters constructDiscoveryQueryParamsFactory(PlatformComponentType platformComponentType, NetworkServiceType networkServiceType, String alias, String identityPublicKey, Location location, Double distance, String name, String extraData, Integer firstRecord, Integer numRegister, PlatformComponentType fromOtherPlatformComponentType, NetworkServiceType fromOtherNetworkServiceType) {
+    public DiscoveryQueryParameters constructDiscoveryQueryParamsFactory(PlatformComponentType platformComponentType, NetworkServiceType networkServiceType, String alias,String identityPublicKey, Location location, Double distance, String name, String extraData, Integer firstRecord, Integer numRegister, PlatformComponentType fromOtherPlatformComponentType, NetworkServiceType fromOtherNetworkServiceType) {
         return null;
     }
 
@@ -224,5 +224,35 @@ public class WalletCommunityNetworkServicePluginRoot extends AbstractPlugin impl
     @Override
     public boolean isRegister() {
         return false;
+    }
+
+    @Override
+    public void setPlatformComponentProfilePluginRoot(PlatformComponentProfile platformComponentProfile) {
+
+    }
+
+    @Override
+    public void initializeCommunicationNetworkServiceConnectionManager() {
+
+    }
+
+    @Override
+    public String getIdentityPublicKey() {
+        return null;
+    }
+
+    @Override
+    public String getAlias() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public String getExtraData() {
+        return null;
     }
 }

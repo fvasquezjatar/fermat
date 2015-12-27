@@ -4,7 +4,6 @@ import com.bitdubai.fermat_api.layer.osa_android.database_system.Database;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.DatabaseDataType;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.DatabaseFactory;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.DatabaseTableFactory;
-import com.bitdubai.fermat_api.layer.osa_android.database_system.DealsWithPluginDatabaseSystem;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.PluginDatabaseSystem;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantCreateDatabaseException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantCreateTableException;
@@ -22,43 +21,25 @@ import java.util.UUID;
  * @version 1.0
  * @since Java JDK 1.7
  */
-public class NegotiationTransmissionNetworkServiceDatabaseFactory implements DealsWithPluginDatabaseSystem {
+public final class NegotiationTransmissionNetworkServiceDatabaseFactory {
 
-    /**
-     * DealsWithPluginDatabaseSystem Interface member variables.
-     */
-    private PluginDatabaseSystem pluginDatabaseSystem;
+    private final PluginDatabaseSystem pluginDatabaseSystem;
 
-    /**
-     * Constructor with parameters to instantiate class
-     * .
-     *
-     * @param pluginDatabaseSystem DealsWithPluginDatabaseSystem
-     */
-    public NegotiationTransmissionNetworkServiceDatabaseFactory(PluginDatabaseSystem pluginDatabaseSystem) {
+    public NegotiationTransmissionNetworkServiceDatabaseFactory(final PluginDatabaseSystem pluginDatabaseSystem) {
+
         this.pluginDatabaseSystem = pluginDatabaseSystem;
     }
 
-    /**
-     * Create the database
-     *
-     * @param ownerId      the owner id
-     * @param databaseName the database name
-     * @return Database
-     * @throws CantCreateDatabaseException
-     */
-    protected Database createDatabase(UUID ownerId, String databaseName) throws CantCreateDatabaseException {
+    public final Database createDatabase(final UUID   ownerId     ,
+                                         final String databaseName) throws CantCreateDatabaseException {
+
         Database database;
 
-        /**
-         * I will create the database where I am going to store the information of this wallet.
-         */
         try {
             database = this.pluginDatabaseSystem.createDatabase(ownerId, databaseName);
+
         } catch (CantCreateDatabaseException cantCreateDatabaseException) {
-            /**
-             * I can not handle this situation.
-             */
+
             throw new CantCreateDatabaseException(CantCreateDatabaseException.DEFAULT_MESSAGE, cantCreateDatabaseException, "", "Exception not handled by the plugin, There is a problem and i cannot create the database.");
         }
 
@@ -66,8 +47,56 @@ public class NegotiationTransmissionNetworkServiceDatabaseFactory implements Dea
          * Next, I will add the needed tables.
          */
         try {
+            final DatabaseFactory databaseFactory = database.getDatabaseFactory();
+
+
             DatabaseTableFactory table;
-            DatabaseFactory databaseFactory = database.getDatabaseFactory();
+
+            /*
+             * Create incoming messages table.
+             */
+            table = databaseFactory.newTableFactory(ownerId, NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_TABLE_NAME);
+
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_ID_COLUMN_NAME                , DatabaseDataType.STRING,  36, Boolean.TRUE );
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_SENDER_ID_COLUMN_NAME         , DatabaseDataType.STRING, 100, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_RECEIVER_ID_COLUMN_NAME       , DatabaseDataType.STRING,  10, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_TEXT_CONTENT_COLUMN_NAME      , DatabaseDataType.STRING, 255, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_TYPE_COLUMN_NAME              , DatabaseDataType.STRING, 100, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_SHIPPING_TIMESTAMP_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_DELIVERY_TIMESTAMP_COLUMN_NAME, DatabaseDataType.STRING, 255, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_STATUS_COLUMN_NAME            , DatabaseDataType.STRING, 100, Boolean.FALSE);
+
+            table.addIndex(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_FIRST_KEY_COLUMN);
+
+            try {
+                //Create the table
+                databaseFactory.createTable(ownerId, table);
+            } catch (CantCreateTableException cantCreateTableException) {
+                throw new CantCreateDatabaseException(cantCreateTableException, "", "Exception not handled by the plugin, There is a problem and i cannot create the table.");
+            }
+
+            /*
+             * Create outgoing messages table.
+             */
+            table = databaseFactory.newTableFactory(ownerId, NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_TABLE_NAME);
+
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_ID_COLUMN_NAME                , DatabaseDataType.STRING,  36, Boolean.TRUE );
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_SENDER_ID_COLUMN_NAME         , DatabaseDataType.STRING, 100, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_RECEIVER_ID_COLUMN_NAME       , DatabaseDataType.STRING,  10, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_TEXT_CONTENT_COLUMN_NAME      , DatabaseDataType.STRING, 255, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_TYPE_COLUMN_NAME              , DatabaseDataType.STRING, 100, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_SHIPPING_TIMESTAMP_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_DELIVERY_TIMESTAMP_COLUMN_NAME, DatabaseDataType.STRING, 255, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_STATUS_COLUMN_NAME            , DatabaseDataType.STRING, 100, Boolean.FALSE);
+
+            table.addIndex(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_FIRST_KEY_COLUMN);
+
+            try {
+                //Create the table
+                databaseFactory.createTable(ownerId, table);
+            } catch (CantCreateTableException cantCreateTableException) {
+                throw new CantCreateDatabaseException(cantCreateTableException, "", "Exception not handled by the plugin, There is a problem and i cannot create the table.");
+            }
 
             /**
              * Create Negotiation Transmission Network Service table.
@@ -75,13 +104,17 @@ public class NegotiationTransmissionNetworkServiceDatabaseFactory implements Dea
             table = databaseFactory.newTableFactory(ownerId, NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TABLE_NAME);
 
             table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TRANSMISSION_ID_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.TRUE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TRANSACTION_ID_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.TRUE);
             table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_NEGOTIATION_ID_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.TRUE);
             table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_NEGOTIATION_STATUS_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.TRUE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_NEGOTIATION_TRANSACTION_TYPE_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.TRUE);
             table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PUBLIC_KEY_ACTOR_SEND_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.FALSE);
-            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PUBLIC_KEY_ACTOR_SEND_TYPE_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_ACTOR_SEND_TYPE_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.FALSE);
             table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PUBLIC_KEY_ACTOR_RECEIVE_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.FALSE);
-            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PUBLIC_KEY_ACTOR_RECEIVE_TYPE_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.FALSE);
-            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_STATE_COLUMN_NAME, DatabaseDataType.STRING, 50, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_ACTOR_RECEIVE_TYPE_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TRANSMISSION_TYPE_COLUMN_NAME, DatabaseDataType.STRING, 50, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TRANSMISSION_STATE_COLUMN_NAME, DatabaseDataType.STRING, 50, Boolean.FALSE);
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PENDING_FLAG_COLUMN_NAME, DatabaseDataType.STRING, 5, Boolean.FALSE);
             table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TIMESTAMP_COLUMN_NAME, DatabaseDataType.LONG_INTEGER, 0, Boolean.FALSE);
 
             table.addIndex(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_FIRST_KEY_COLUMN);
@@ -92,21 +125,33 @@ public class NegotiationTransmissionNetworkServiceDatabaseFactory implements Dea
             } catch (CantCreateTableException cantCreateTableException) {
                 throw new CantCreateDatabaseException(CantCreateDatabaseException.DEFAULT_MESSAGE, cantCreateTableException, "", "Exception not handled by the plugin, There is a problem and i cannot create the table.");
             }
-        } catch (InvalidOwnerIdException invalidOwnerId) {
-            /**
-             * This shouldn't happen here because I was the one who gave the owner id to the database file system,
-             * but anyway, if this happens, I can not continue.
+
+            /*
+             * Create Negotiation Transmission Network Service Version Details table.
              */
-            throw new CantCreateDatabaseException(CantCreateDatabaseException.DEFAULT_MESSAGE, invalidOwnerId, "", "There is a problem with the ownerId of the database.");
+            table = databaseFactory.newTableFactory(ownerId, NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_DETAILS_TABLE_NAME);
+
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_DETAILS_ID_COLUMN_NAME, DatabaseDataType.STRING, 36, Boolean.TRUE );
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_DETAILS_ACTOR_PUBLIC_KEY_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.TRUE );
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_DETAILS_IPK_COLUMN_NAME, DatabaseDataType.STRING, 100, Boolean.TRUE );
+            table.addColumn(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_DETAILS_LAST_CONNECTION_COLUMN_NAME, DatabaseDataType.STRING, 30, Boolean.TRUE );
+
+            table.addIndex(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_DETAILS_FIRST_KEY_COLUMN);
+
+            try {
+                //Create the table
+                databaseFactory.createTable(ownerId, table);
+            } catch (CantCreateTableException cantCreateTableException) {
+                throw new CantCreateDatabaseException(cantCreateTableException, "", "Exception not handled by the plugin, There is a problem and i cannot create the table.");
+            }
+
+            return database;
+
+        } catch (InvalidOwnerIdException invalidOwnerId) {
+
+            throw new CantCreateDatabaseException(invalidOwnerId, "", "There is a problem with the ownerId of the database.");
         }
-        return database;
+
     }
 
-    /**
-     * DealsWithPluginDatabaseSystem Interface implementation.
-     */
-    @Override
-    public void setPluginDatabaseSystem(PluginDatabaseSystem pluginDatabaseSystem) {
-        this.pluginDatabaseSystem = pluginDatabaseSystem;
-    }
 }

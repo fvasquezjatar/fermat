@@ -21,12 +21,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.layer.definition.wallet.utils.ImagesUtils;
 import com.bitdubai.fermat_api.layer.all_definition.enums.UISource;
 import com.bitdubai.fermat_api.layer.all_definition.navigation_structure.enums.Activities;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedUIExceptionSeverity;
 import com.bitdubai.sub_app.crypto_broker_identity.R;
 import com.bitdubai.sub_app.crypto_broker_identity.util.CommonLogger;
 import com.bitdubai.sub_app.crypto_broker_identity.util.CreateBrokerIdentityExecutor;
@@ -38,7 +38,7 @@ import static com.bitdubai.sub_app.crypto_broker_identity.util.CreateBrokerIdent
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CreateCryptoBrokerIdentityFragment extends FermatFragment {
+public class CreateCryptoBrokerIdentityFragment extends AbstractFermatFragment {
 
     private static final String TAG = "CreateBrokerIdentity";
 
@@ -65,7 +65,7 @@ public class CreateCryptoBrokerIdentityFragment extends FermatFragment {
         super.onCreate(savedInstanceState);
 
         try {
-            errorManager = subAppsSession.getErrorManager();
+            errorManager = appSession.getErrorManager();
         } catch (Exception ex) {
             CommonLogger.exception(TAG, ex.getMessage(), ex);
         }
@@ -177,12 +177,12 @@ public class CreateCryptoBrokerIdentityFragment extends FermatFragment {
         if (cryptoBrokerBitmap != null)
             imgInBytes = ImagesUtils.toByteArray(cryptoBrokerBitmap);
 
-        CreateBrokerIdentityExecutor executor = new CreateBrokerIdentityExecutor(subAppsSession, brokerNameText, imgInBytes);
+        CreateBrokerIdentityExecutor executor = new CreateBrokerIdentityExecutor(appSession, brokerNameText, imgInBytes);
         int resultKey = executor.execute();
 
         switch (resultKey) {
             case SUCCESS:
-                changeActivity(Activities.CBP_SUB_APP_CRYPTO_BROKER_IDENTITY.getCode(), subAppsSession.getAppPublicKey());
+                changeActivity(Activities.CBP_SUB_APP_CRYPTO_BROKER_IDENTITY.getCode(), appSession.getAppPublicKey());
                 break;
             case EXCEPTION_THROWN:
                 Toast.makeText(getActivity(), "Error creating identity.", Toast.LENGTH_LONG).show();

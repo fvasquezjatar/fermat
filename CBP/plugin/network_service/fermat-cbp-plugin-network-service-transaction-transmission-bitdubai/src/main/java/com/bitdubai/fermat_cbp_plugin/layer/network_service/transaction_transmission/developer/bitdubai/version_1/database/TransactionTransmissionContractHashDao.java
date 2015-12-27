@@ -16,11 +16,11 @@ import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.Cant
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantOpenDatabaseException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.DatabaseNotFoundException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.DatabaseTransactionFailedException;
-import com.bitdubai.fermat_cbp_api.all_definition.enums.ContractStatus;
-import com.bitdubai.fermat_cbp_api.layer.network_service.TransactionTransmission.enums.BusinessTransactionTransactionType;
-import com.bitdubai.fermat_cbp_api.layer.network_service.TransactionTransmission.enums.TransactionTransmissionStates;
-import com.bitdubai.fermat_cbp_api.layer.network_service.TransactionTransmission.exceptions.PendingRequestNotFoundException;
-import com.bitdubai.fermat_cbp_api.layer.network_service.TransactionTransmission.interfaces.BusinessTransactionMetadata;
+import com.bitdubai.fermat_cbp_api.all_definition.enums.ContractTransactionStatus;
+import com.bitdubai.fermat_cbp_api.layer.network_service.transaction_transmission.enums.BusinessTransactionTransactionType;
+import com.bitdubai.fermat_cbp_api.layer.network_service.transaction_transmission.enums.TransactionTransmissionStates;
+import com.bitdubai.fermat_cbp_api.layer.network_service.transaction_transmission.exceptions.PendingRequestNotFoundException;
+import com.bitdubai.fermat_cbp_api.layer.network_service.transaction_transmission.interfaces.BusinessTransactionMetadata;
 import com.bitdubai.fermat_cbp_plugin.layer.network_service.transaction_transmission.developer.bitdubai.version_1.exceptions.CantDeleteRecordDataBaseException;
 import com.bitdubai.fermat_cbp_plugin.layer.network_service.transaction_transmission.developer.bitdubai.version_1.exceptions.CantGetTransactionTransmissionException;
 import com.bitdubai.fermat_cbp_plugin.layer.network_service.transaction_transmission.developer.bitdubai.version_1.exceptions.CantInitializeNetworkServiceDatabaseException;
@@ -120,6 +120,8 @@ public class TransactionTransmissionContractHashDao {
         } catch (CantInsertRecordException e) {
 
             throw new CantInsertRecordDataBaseException(CantInsertRecordException.DEFAULT_MESSAGE,e, "Exception not handled by the plugin, there is a problem in database and I cannot insert the record.","");
+        } catch (Exception e){
+            throw new CantInsertRecordDataBaseException(CantInsertRecordException.DEFAULT_MESSAGE,e, "Exception not handled by the plugin, there is a problem in database and I cannot insert the record.","");
         }
     }
 
@@ -129,7 +131,7 @@ public class TransactionTransmissionContractHashDao {
         record.setUUIDValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_TRANSMISSION_ID_COLUMN_NAME, businessTransactionMetadata.getTransactionId());
         //if(businessTransactionMetadata.getRequestId()!=null) record.setUUIDValue(CryptoTransmissionNetworkServiceDatabaseConstants.CRYPTO_TRANSMISSION_METADATA_REQUEST_ID_COLUMN_NAME,  businessTransactionMetadata.getRequestId());
         record.setStringValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_CONTRACT_HASH_COLUMN_NAME, businessTransactionMetadata.getContractHash());
-        record.setStringValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_CONTRACT_STATUS_COLUMN_NAME, businessTransactionMetadata.getContractStatus().getCode());
+        record.setStringValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_CONTRACT_STATUS_COLUMN_NAME, businessTransactionMetadata.getContractTransactionStatus().getCode());
         record.setStringValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_CONTRACT_ID_COLUMN_NAME, businessTransactionMetadata.getContractId());
         record.setStringValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_SENDER_PUBLIC_KEY_COLUMN_NAME , businessTransactionMetadata.getSenderId());
         record.setStringValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_SENDER_TYPE_COLUMN_NAME, businessTransactionMetadata.getSenderType().getCode());
@@ -187,6 +189,9 @@ public class TransactionTransmissionContractHashDao {
             e.printStackTrace();
         } catch (CantGetTransactionTransmissionException e) {
             e.printStackTrace();
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new CantUpdateRecordDataBaseException(CantUpdateRecordDataBaseException.DEFAULT_MESSAGE,e, "Exception not handled by the plugin, there is a problem in database and I cannot update the record.","");
         }
 
     }
@@ -201,7 +206,7 @@ public class TransactionTransmissionContractHashDao {
 
             DatabaseTable databaseTable = getDatabaseTable();
 
-            databaseTable.setUUIDFilter(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_TRANSMISSION_ID_COLUMN_NAME, transmissionId, DatabaseFilterType.EQUAL);
+            databaseTable.addUUIDFilter(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_TRANSMISSION_ID_COLUMN_NAME, transmissionId, DatabaseFilterType.EQUAL);
 
             databaseTable.loadToMemory();
 
@@ -220,6 +225,9 @@ public class TransactionTransmissionContractHashDao {
         } catch (InvalidParameterException exception) {
 
             throw new CantGetTransactionTransmissionException("",exception, "Check the cause.","");
+        }catch (Exception e){
+
+            throw new CantGetTransactionTransmissionException(CantGetTransactionTransmissionException.DEFAULT_MESSAGE,e, "Exception not handled by the plugin, there is a problem in database and i cannot load the table.","");
         }
     }
 
@@ -238,7 +246,7 @@ public class TransactionTransmissionContractHashDao {
         long timestamp = record.getLongValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_TIMESTAMP_COLUMN_NAME);
         String state= record.getStringValue(CommunicationNetworkServiceDatabaseConstants.TRANSACTION_TRANSMISSION_HASH_STATE_COLUMN_NAME);
 
-        ContractStatus recordContractStatus=ContractStatus.getByCode(contractStatus);
+        ContractTransactionStatus recordContractStatus=ContractTransactionStatus.getByCode(contractStatus);
         PlatformComponentType recordReceiverType=PlatformComponentType.getByCode(receiverType);
         PlatformComponentType recordSenderType=PlatformComponentType.getByCode(senderType);
         BusinessTransactionTransactionType recordTransactionType=BusinessTransactionTransactionType.getByCode(type);
@@ -281,6 +289,12 @@ public class TransactionTransmissionContractHashDao {
             CantUpdateRecordDataBaseException cantUpdateRecordDataBaseException = new CantUpdateRecordDataBaseException(CantUpdateRecordDataBaseException.DEFAULT_MESSAGE, e, context, possibleCause);
             throw cantUpdateRecordDataBaseException;
 
+        }catch(CantGetTransactionTransmissionException e){
+            CantGetTransactionTransmissionException cantGetTransactionTransmissionException = new CantGetTransactionTransmissionException(CantGetTransactionTransmissionException.DEFAULT_MESSAGE, e, "", "Exception that the plugin was unable to handle");
+            throw cantGetTransactionTransmissionException;
+        }catch (Exception e){
+
+            throw new CantGetTransactionTransmissionException(CantGetTransactionTransmissionException.DEFAULT_MESSAGE,e, "Exception not handled by the plugin, there is a problem in database and i cannot load the table.","");
         }
     }
 
@@ -310,6 +324,9 @@ public class TransactionTransmissionContractHashDao {
             CantUpdateRecordDataBaseException cantUpdateRecordDataBaseException = new CantUpdateRecordDataBaseException(CantUpdateRecordDataBaseException.DEFAULT_MESSAGE, databaseTransactionFailedException, context, possibleCause);
             throw cantUpdateRecordDataBaseException;
 
+        } catch (Exception e){
+
+            throw new CantUpdateRecordDataBaseException(CantUpdateRecordDataBaseException.DEFAULT_MESSAGE,e, "Exception not handled by the plugin, there is a problem in database and i cannot load the table.","");
         }
 
     }
@@ -374,6 +391,9 @@ public class TransactionTransmissionContractHashDao {
         } catch (InvalidParameterException e) {
             CantReadRecordDataBaseException cantReadRecordDataBaseException = new CantReadRecordDataBaseException(CantReadRecordDataBaseException.DEFAULT_MESSAGE, e, "", "invalid parameter");
             throw cantReadRecordDataBaseException;
+        } catch (Exception e){
+
+            throw new CantReadRecordDataBaseException(CantReadRecordDataBaseException.DEFAULT_MESSAGE,e, "Exception not handled by the plugin, there is a problem in database and i cannot load the table.","");
         }
 
         return list;
@@ -411,6 +431,9 @@ public class TransactionTransmissionContractHashDao {
             CantUpdateRecordDataBaseException cantUpdateRecordDataBaseException = new CantUpdateRecordDataBaseException(CantDeleteRecordDataBaseException.DEFAULT_MESSAGE, databaseTransactionFailedException, context, possibleCause);
             throw cantUpdateRecordDataBaseException;
 
+        } catch (Exception e){
+
+            throw new CantUpdateRecordDataBaseException(CantUpdateRecordDataBaseException.DEFAULT_MESSAGE,e, "Exception not handled by the plugin, there is a problem in database and i cannot load the table.","");
         }
 
     }

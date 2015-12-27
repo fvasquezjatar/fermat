@@ -1,6 +1,5 @@
 package com.bitdubai.fermat_cbp_plugin.layer.network_service.negotiation_transmission.developer.bitdubai.version_1.database;
 
-import com.bitdubai.fermat_api.DealsWithPluginIdentity;
 import com.bitdubai.fermat_api.layer.all_definition.developer.DeveloperDatabase;
 import com.bitdubai.fermat_api.layer.all_definition.developer.DeveloperDatabaseTable;
 import com.bitdubai.fermat_api.layer.all_definition.developer.DeveloperDatabaseTableRecord;
@@ -9,13 +8,12 @@ import com.bitdubai.fermat_api.layer.osa_android.database_system.Database;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.DatabaseRecord;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.DatabaseTable;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.DatabaseTableRecord;
-import com.bitdubai.fermat_api.layer.osa_android.database_system.DealsWithPluginDatabaseSystem;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.PluginDatabaseSystem;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantCreateDatabaseException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantLoadTableToMemoryException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.DatabaseNotFoundException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantOpenDatabaseException;
-import com.bitdubai.fermat_cbp_plugin.layer.network_service.negotiation_transmission.developer.bitdubai.version_1.exceptions.CantInitializeNegotiationTransmissionNetworkServiceDatabaseException;
+import com.bitdubai.fermat_cbp_plugin.layer.network_service.negotiation_transmission.developer.bitdubai.version_1.exceptions.CantInitializeNetworkServiceDatabaseException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,87 +30,95 @@ import java.util.UUID;
  * @since Java JDK 1.7
  */
 
-public class NegotiationTransmissionNetworkServiceDeveloperDatabaseFactory implements DealsWithPluginDatabaseSystem, DealsWithPluginIdentity {
+public final class NegotiationTransmissionNetworkServiceDeveloperDatabaseFactory {
 
-    /**
-     * DealsWithPluginDatabaseSystem Interface member variables.
-     */
-    PluginDatabaseSystem pluginDatabaseSystem;
+    private final PluginDatabaseSystem pluginDatabaseSystem;
+    private final UUID                 pluginId            ;
 
-    /**
-     * DealsWithPluginIdentity Interface member variables.
-     */
-    UUID pluginId;
+    private       Database             database            ;
 
+    public NegotiationTransmissionNetworkServiceDeveloperDatabaseFactory(final PluginDatabaseSystem pluginDatabaseSystem,
+                                                                         final UUID pluginId) {
 
-    Database database;
-
-    /**
-     * Constructor
-     *
-     * @param pluginDatabaseSystem
-     * @param pluginId
-     */
-    public NegotiationTransmissionNetworkServiceDeveloperDatabaseFactory(PluginDatabaseSystem pluginDatabaseSystem, UUID pluginId) {
         this.pluginDatabaseSystem = pluginDatabaseSystem;
-        this.pluginId = pluginId;
+        this.pluginId             = pluginId            ;
     }
 
-    /**
-     * This method open or creates the database i'll be working with
-     *
-     * @throws CantInitializeNegotiationTransmissionNetworkServiceDatabaseException
-     */
-    public void initializeDatabase() throws CantInitializeNegotiationTransmissionNetworkServiceDatabaseException {
+    public final void initializeDatabase() throws CantInitializeNetworkServiceDatabaseException {
+
         try {
 
-             /*
-              * Open new database connection
-              */
             database = this.pluginDatabaseSystem.openDatabase(pluginId, pluginId.toString());
 
-        } catch (CantOpenDatabaseException cantOpenDatabaseException) {
+        } catch (final CantOpenDatabaseException cantOpenDatabaseException) {
 
-             /*
-              * The database exists but cannot be open. I can not handle this situation.
-              */
-            throw new CantInitializeNegotiationTransmissionNetworkServiceDatabaseException(cantOpenDatabaseException.getMessage());
+            throw new CantInitializeNetworkServiceDatabaseException(cantOpenDatabaseException);
+        } catch (final DatabaseNotFoundException e) {
 
-        } catch (DatabaseNotFoundException e) {
-
-             /*
-              * The database no exist may be the first time the plugin is running on this device,
-              * We need to create the new database
-              */
-            NegotiationTransmissionNetworkServiceDatabaseFactory negotiationTransmissionNetworkServiceDatabaseFactory = new NegotiationTransmissionNetworkServiceDatabaseFactory(pluginDatabaseSystem);
+            final NegotiationTransmissionNetworkServiceDatabaseFactory negotiationTransmissionNetworkServiceDatabaseFactory = new NegotiationTransmissionNetworkServiceDatabaseFactory(pluginDatabaseSystem);
 
             try {
-                  /*
-                   * We create the new database
-                   */
+
                 database = negotiationTransmissionNetworkServiceDatabaseFactory.createDatabase(pluginId, pluginId.toString());
-            } catch (CantCreateDatabaseException cantCreateDatabaseException) {
-                  /*
-                   * The database cannot be created. I can not handle this situation.
-                   */
-                throw new CantInitializeNegotiationTransmissionNetworkServiceDatabaseException(cantCreateDatabaseException.getMessage());
+            } catch (final CantCreateDatabaseException cantCreateDatabaseException) {
+
+                throw new CantInitializeNetworkServiceDatabaseException(cantCreateDatabaseException);
             }
         }
     }
 
 
-    public List<DeveloperDatabase> getDatabaseList(DeveloperObjectFactory developerObjectFactory) {
-        /**
-         * I only have one database on my plugin. I will return its name.
-         */
-        List<DeveloperDatabase> databases = new ArrayList<DeveloperDatabase>();
-        databases.add(developerObjectFactory.getNewDeveloperDatabase("Negotiation Transmission", this.pluginId.toString()));
+    public final List<DeveloperDatabase> getDatabaseList(final DeveloperObjectFactory developerObjectFactory) {
+
+        List<DeveloperDatabase> databases = new ArrayList<>();
+
+        databases.add(developerObjectFactory.getNewDeveloperDatabase(NegotiationTransmissionNetworkServiceDatabaseConstants.DATA_BASE_NAME, this.pluginId.toString()));
+
         return databases;
     }
 
 
-    public List<DeveloperDatabaseTable> getDatabaseTableList(DeveloperObjectFactory developerObjectFactory) {
-        List<DeveloperDatabaseTable> tables = new ArrayList<DeveloperDatabaseTable>();
+    public final List<DeveloperDatabaseTable> getDatabaseTableList(final DeveloperObjectFactory developerObjectFactory) {
+
+        List<DeveloperDatabaseTable> tables = new ArrayList<>();
+
+        /**
+         * Table incoming messages columns.
+         */
+        List<String> incomingMessagesColumns = new ArrayList<>();
+
+        incomingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_ID_COLUMN_NAME);
+        incomingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_SENDER_ID_COLUMN_NAME);
+        incomingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_RECEIVER_ID_COLUMN_NAME);
+        incomingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_TEXT_CONTENT_COLUMN_NAME);
+        incomingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_TYPE_COLUMN_NAME);
+        incomingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_SHIPPING_TIMESTAMP_COLUMN_NAME);
+        incomingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_DELIVERY_TIMESTAMP_COLUMN_NAME);
+        incomingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_STATUS_COLUMN_NAME);
+        /**
+         * Table incoming messages addition.
+         */
+        DeveloperDatabaseTable incomingMessagesTable = developerObjectFactory.getNewDeveloperDatabaseTable(NegotiationTransmissionNetworkServiceDatabaseConstants.INCOMING_MESSAGES_TABLE_NAME, incomingMessagesColumns);
+        tables.add(incomingMessagesTable);
+
+        /**
+         * Table outgoing messages columns.
+         */
+        List<String> outgoingMessagesColumns = new ArrayList<>();
+
+        outgoingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_ID_COLUMN_NAME);
+        outgoingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_SENDER_ID_COLUMN_NAME);
+        outgoingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_RECEIVER_ID_COLUMN_NAME);
+        outgoingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_TEXT_CONTENT_COLUMN_NAME);
+        outgoingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_TYPE_COLUMN_NAME);
+        outgoingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_SHIPPING_TIMESTAMP_COLUMN_NAME);
+        outgoingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_DELIVERY_TIMESTAMP_COLUMN_NAME);
+        outgoingMessagesColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_STATUS_COLUMN_NAME);
+        /**
+         * Table outgoing messages addition.
+         */
+        DeveloperDatabaseTable outgoingMessagesTable = developerObjectFactory.getNewDeveloperDatabaseTable(NegotiationTransmissionNetworkServiceDatabaseConstants.OUTGOING_MESSAGES_TABLE_NAME, outgoingMessagesColumns);
+        tables.add(outgoingMessagesTable);
 
         /**
          * Table Negotiation Transmission Network Service columns.
@@ -120,13 +126,17 @@ public class NegotiationTransmissionNetworkServiceDeveloperDatabaseFactory imple
         List<String> negotiationTransmissionNetworkServiceColumns = new ArrayList<String>();
 
         negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TRANSMISSION_ID_COLUMN_NAME);
+        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TRANSACTION_ID_COLUMN_NAME);
         negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_NEGOTIATION_ID_COLUMN_NAME);
         negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_NEGOTIATION_STATUS_COLUMN_NAME);
+        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_NEGOTIATION_TRANSACTION_TYPE_COLUMN_NAME);
         negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PUBLIC_KEY_ACTOR_SEND_COLUMN_NAME);
-        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PUBLIC_KEY_ACTOR_SEND_TYPE_COLUMN_NAME);
+        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_ACTOR_SEND_TYPE_COLUMN_NAME);
         negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PUBLIC_KEY_ACTOR_RECEIVE_COLUMN_NAME);
-        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PUBLIC_KEY_ACTOR_RECEIVE_TYPE_COLUMN_NAME);
-        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_STATE_COLUMN_NAME);
+        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_ACTOR_RECEIVE_TYPE_COLUMN_NAME);
+        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TRANSMISSION_TYPE_COLUMN_NAME);
+        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TRANSMISSION_STATE_COLUMN_NAME);
+        negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_PENDING_FLAG_COLUMN_NAME);
         negotiationTransmissionNetworkServiceColumns.add(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TIMESTAMP_COLUMN_NAME);
         /**
          * Table Negotiation Transmission Network Service addition.
@@ -134,64 +144,40 @@ public class NegotiationTransmissionNetworkServiceDeveloperDatabaseFactory imple
         DeveloperDatabaseTable negotiationTransmissionNetworkServiceTable = developerObjectFactory.getNewDeveloperDatabaseTable(NegotiationTransmissionNetworkServiceDatabaseConstants.NEGOTIATION_TRANSMISSION_NETWORK_SERVICE_TABLE_NAME, negotiationTransmissionNetworkServiceColumns);
         tables.add(negotiationTransmissionNetworkServiceTable);
 
-
-
         return tables;
     }
 
 
-    public List<DeveloperDatabaseTableRecord> getDatabaseTableContent(DeveloperObjectFactory developerObjectFactory, DeveloperDatabaseTable developerDatabaseTable) {
-        /**
-         * Will get the records for the given table
-         */
-        List<DeveloperDatabaseTableRecord> returnedRecords = new ArrayList<DeveloperDatabaseTableRecord>();
+    public final List<DeveloperDatabaseTableRecord> getDatabaseTableContent(final DeveloperObjectFactory developerObjectFactory,
+                                                                            final DeveloperDatabaseTable developerDatabaseTable) {
 
 
-        /**
-         * I load the passed table name from the SQLite database.
-         */
-        DatabaseTable selectedTable = database.getTable(developerDatabaseTable.getName());
+        final List<DeveloperDatabaseTableRecord> returnedRecords = new ArrayList<>();
+
+        final DatabaseTable selectedTable = database.getTable(developerDatabaseTable.getName());
+
         try {
+
             selectedTable.loadToMemory();
+            final List<DatabaseTableRecord> records = selectedTable.getRecords();
+
+            for (final DatabaseTableRecord row: records){
+
+                final List<String> developerRow = new ArrayList<>();
+
+                for (DatabaseRecord field : row.getValues())
+                    developerRow.add(field.getValue());
+
+
+                returnedRecords.add(developerObjectFactory.getNewDeveloperDatabaseTableRecord(developerRow));
+            }
+
         } catch (CantLoadTableToMemoryException cantLoadTableToMemory) {
-            /**
-             * if there was an error, I will returned an empty list.
-             */
+
+            return returnedRecords;
+        } catch (Exception e){
             return returnedRecords;
         }
-
-        List<DatabaseTableRecord> records = selectedTable.getRecords();
-        List<String> developerRow = new ArrayList<String>();
-        for (DatabaseTableRecord row : records) {
-            /**
-             * for each row in the table list
-             */
-            for (DatabaseRecord field : row.getValues()) {
-                /**
-                 * I get each row and save them into a List<String>
-                 */
-                developerRow.add(field.getValue().toString());
-            }
-            /**
-             * I create the Developer Database record
-             */
-            returnedRecords.add(developerObjectFactory.getNewDeveloperDatabaseTableRecord(developerRow));
-        }
-
-
-        /**
-         * return the list of DeveloperRecords for the passed table.
-         */
         return returnedRecords;
-    }
-
-    @Override
-    public void setPluginDatabaseSystem(PluginDatabaseSystem pluginDatabaseSystem) {
-        this.pluginDatabaseSystem = pluginDatabaseSystem;
-    }
-
-    @Override
-    public void setPluginId(UUID pluginId) {
-        this.pluginId = pluginId;
     }
 }

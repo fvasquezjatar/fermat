@@ -1,10 +1,14 @@
 package com.bitdubai.fermat_ccp_api.layer.actor.intra_user.interfaces;
 
+import com.bitdubai.fermat_api.layer.actor_connection.common.enums.ConnectionState;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.interfaces.FermatManager;
 import com.bitdubai.fermat_ccp_api.layer.actor.Actor;
 
 import com.bitdubai.fermat_ccp_api.layer.actor.intra_user.exceptions.CantAcceptIntraWalletUserException;
+import com.bitdubai.fermat_ccp_api.layer.actor.intra_user.exceptions.CantCreateNewDeveloperException;
 import com.bitdubai.fermat_ccp_api.layer.actor.intra_user.exceptions.CantGetIntraUserException;
+import com.bitdubai.fermat_ccp_api.layer.actor.intra_user.exceptions.CantGetIntraUsersConnectedStateException;
+import com.bitdubai.fermat_ccp_api.layer.identity.intra_user.exceptions.RequestAlreadySendException;
 
 import java.util.List;
 
@@ -29,7 +33,7 @@ public interface IntraWalletUserActorManager extends FermatManager {
     void askIntraWalletUserForAcceptance(String intraWalletUserIdentityToLinkPublicKey,
                                          String intraWalletUserToAddName              ,
                                          String intraWalletUserToAddPublicKey         ,
-                                         byte[] profileImage                          ) throws com.bitdubai.fermat_ccp_api.layer.actor.intra_user.exceptions.CantCreateIntraWalletUserException;
+                                         byte[] profileImage                          ) throws com.bitdubai.fermat_ccp_api.layer.actor.intra_user.exceptions.CantCreateIntraWalletUserException,RequestAlreadySendException;
 
 
     /**
@@ -138,4 +142,14 @@ public interface IntraWalletUserActorManager extends FermatManager {
      */
     void setPhoto(String actorPublicKey, byte[] photo) throws com.bitdubai.fermat_ccp_api.layer.actor.intra_user.exceptions.CantSetPhotoException, com.bitdubai.fermat_ccp_api.layer.actor.intra_user.exceptions.IntraUserNotFoundException;
 
+    boolean isActorConnected(String publicKey) throws CantCreateNewDeveloperException;
+
+    /**
+     *The method <code>CantGetIntraUsersConnectedStateException</code> intra user get connection status
+     *
+     * @param intraUserConnectedPublicKey
+     * @return ConnectionState object
+     * @throws CantGetIntraUsersConnectedStateException
+     */
+    ConnectionState getIntraUsersConnectionStatus(String intraUserConnectedPublicKey) throws CantGetIntraUsersConnectedStateException;
 }

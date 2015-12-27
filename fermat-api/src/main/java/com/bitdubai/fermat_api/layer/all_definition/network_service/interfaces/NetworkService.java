@@ -3,6 +3,7 @@ package com.bitdubai.fermat_api.layer.all_definition.network_service.interfaces;
 import com.bitdubai.fermat_api.layer.all_definition.components.enums.PlatformComponentType;
 import com.bitdubai.fermat_api.layer.all_definition.components.interfaces.DiscoveryQueryParameters;
 import com.bitdubai.fermat_api.layer.all_definition.components.interfaces.PlatformComponentProfile;
+import com.bitdubai.fermat_api.layer.all_definition.events.EventSource;
 import com.bitdubai.fermat_api.layer.all_definition.events.interfaces.FermatEvent;
 import com.bitdubai.fermat_api.layer.all_definition.network_service.enums.NetworkServiceType;
 import com.bitdubai.fermat_api.layer.osa_android.location_system.Location;
@@ -65,6 +66,7 @@ public interface NetworkService {
      * @param platformComponentType
      * @param networkServiceType
      * @param alias
+
      * @param identityPublicKey
      * @param location
      * @param distance
@@ -118,4 +120,17 @@ public interface NetworkService {
     void handleVpnConnectionCloseNotificationEvent(FermatEvent fermatEvent);
 
     boolean isRegister();
+
+    void setPlatformComponentProfilePluginRoot(PlatformComponentProfile platformComponentProfile);
+
+    void initializeCommunicationNetworkServiceConnectionManager();
+
+    String getIdentityPublicKey();
+
+    String getAlias();
+
+    String getName();
+
+    String getExtraData();
+
 }

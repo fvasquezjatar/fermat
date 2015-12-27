@@ -94,9 +94,9 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
     /*
      * getBookBalance must get actual Book Balance global of Asset Issuer wallet, select record from balances table
      */
-    public List<AssetIssuerWalletList> getBookBalanceByAssets() throws CantCalculateBalanceException {
+    public List<AssetIssuerWalletList> getBalanceByAssets() throws CantCalculateBalanceException {
         try {
-            return getCurrentBookBalanceByAssets();
+            return getCurrentBalanceByAssets();
         } catch (CantGetBalanceRecordException exception) {
             throw new CantCalculateBalanceException(CantCalculateBalanceException.DEFAULT_MESSAGE, exception, null, "Check the cause");
         } catch (Exception exception) {
@@ -119,11 +119,11 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
     }
 
     /*
-    * getBookBalance must get actual Book Balance global of Asset Issuer wallet, select record from balances table
+    * getBalanceByAsset must get actual Balance global of Asset Issuer wallet, select record from balances table
     */
-    public List<AssetIssuerWalletList> getAvailableBalanceByAsset() throws CantCalculateBalanceException {
+    public List<AssetIssuerWalletList> getBalanceByAsset() throws CantCalculateBalanceException {
         try {
-            return getCurrentAvailableBalanceByAssets();
+            return getCurrentBalanceByAssets();
         } catch (CantGetBalanceRecordException exception) {
             throw new CantCalculateBalanceException(CantCalculateBalanceException.DEFAULT_MESSAGE, exception, null, "Check the cause");
         } catch (Exception exception) {
@@ -189,9 +189,9 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
     public List<AssetIssuerWalletTransaction> listsTransactionsByAssetsAll(BalanceType balanceType, TransactionType transactionType, String assetPublicKey) throws CantGetTransactionsException {
         try {
             DatabaseTable databaseTableAssuerIssuerWallet = getAssetIssuerWalletTable();
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, balanceType.getCode(), DatabaseFilterType.EQUAL);
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TYPE_COLUMN_NAME, transactionType.getCode(), DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, balanceType.getCode(), DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TYPE_COLUMN_NAME, transactionType.getCode(), DatabaseFilterType.EQUAL);
 
             databaseTableAssuerIssuerWallet.loadToMemory();
             return createTransactionList(databaseTableAssuerIssuerWallet.getRecords());
@@ -205,8 +205,8 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
     public List<AssetIssuerWalletTransaction> listsTransactionsByAssets(BalanceType balanceType, TransactionType transactionType, int max, int offset, String assetPublicKey) throws CantGetTransactionsException {
         try {
             DatabaseTable databaseTableAssuerIssuerWallet = getAssetIssuerWalletTable();
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, balanceType.getCode(), DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, balanceType.getCode(), DatabaseFilterType.EQUAL);
             databaseTableAssuerIssuerWallet.setFilterTop(String.valueOf(max));
             databaseTableAssuerIssuerWallet.setFilterOffSet(String.valueOf(offset));
 
@@ -223,10 +223,10 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         try {
             DatabaseTable databaseTableAssuerIssuerWallet = getAssetIssuerWalletTable();
 
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ACTOR_FROM_COLUMN_NAME, actorPublicKey, DatabaseFilterType.EQUAL);
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ACTOR_TO_COLUMN_NAME, actorPublicKey, DatabaseFilterType.EQUAL);
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, balanceType.getCode(), DatabaseFilterType.EQUAL);
-            databaseTableAssuerIssuerWallet.setFilterOrder(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TIME_STAMP_COLUMN_NAME, DatabaseFilterOrder.DESCENDING);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ACTOR_FROM_COLUMN_NAME, actorPublicKey, DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ACTOR_TO_COLUMN_NAME, actorPublicKey, DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, balanceType.getCode(), DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addFilterOrder(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TIME_STAMP_COLUMN_NAME, DatabaseFilterOrder.DESCENDING);
 
             databaseTableAssuerIssuerWallet.setFilterTop(String.valueOf(max));
             databaseTableAssuerIssuerWallet.setFilterOffSet(String.valueOf(offset));
@@ -246,8 +246,8 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         try {
             DatabaseTable databaseTableAssuerIssuerWallet = getAssetIssuerWalletTable();
 
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TYPE_COLUMN_NAME, transactionType.getCode(), DatabaseFilterType.EQUAL);
-            databaseTableAssuerIssuerWallet.setFilterOrder(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TIME_STAMP_COLUMN_NAME, DatabaseFilterOrder.DESCENDING);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TYPE_COLUMN_NAME, transactionType.getCode(), DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addFilterOrder(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TIME_STAMP_COLUMN_NAME, DatabaseFilterOrder.DESCENDING);
 
             databaseTableAssuerIssuerWallet.setFilterTop(String.valueOf(max));
             databaseTableAssuerIssuerWallet.setFilterOffSet(String.valueOf(offset));
@@ -284,7 +284,7 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
              *  I will load the information of table into a memory structure, filter for transaction id
              */
 
-            databaseTableAssuerIssuerWalletBalance.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TABLE_ID_COLUMN_NAME, transactionID.toString(), DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWalletBalance.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TABLE_ID_COLUMN_NAME, transactionID.toString(), DatabaseFilterType.EQUAL);
             for (DatabaseTableRecord record : databaseTableAssuerIssuerWalletBalance.getRecords()) {
                 record.setStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_MEMO_COLUMN_NAME, memo);
                 databaseTableAssuerIssuerWalletBalance.updateRecord(record);
@@ -303,9 +303,9 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
     private List<AssetIssuerWalletTransaction> listsTransactionsByAsset(String assetPublicKey) throws CantGetTransactionsException {
         try {
             DatabaseTable databaseTableAssuerIssuerWallet = getAssetIssuerWalletTable();
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
 
-            databaseTableAssuerIssuerWallet.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, BalanceType.AVAILABLE.getCode(), DatabaseFilterType.EQUAL);
+            databaseTableAssuerIssuerWallet.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, BalanceType.AVAILABLE.getCode(), DatabaseFilterType.EQUAL);
 
             databaseTableAssuerIssuerWallet.loadToMemory();
             return createTransactionList(databaseTableAssuerIssuerWallet.getRecords());
@@ -360,7 +360,7 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
             transaction.addRecordToInsert(getAssetIssuerWalletTable(), assetIssuerWalletRecord);
 
             DatabaseTable databaseTable = getBalancesTable();
-            databaseTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_ASSET_PUBLIC_KEY_COLUMN_NAME, assetIssuerWalletTransactionRecord.getDigitalAsset().getPublicKey(), DatabaseFilterType.EQUAL);
+            databaseTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_ASSET_PUBLIC_KEY_COLUMN_NAME, assetIssuerWalletTransactionRecord.getDigitalAsset().getPublicKey(), DatabaseFilterType.EQUAL);
             databaseTable.loadToMemory();
             if (databaseTable.getRecords().isEmpty()) {
                 transaction.addRecordToInsert(databaseTable, assetBalanceRecord);
@@ -457,9 +457,9 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
 
     private boolean isTransactionInTable(final String transactionId, final TransactionType transactionType, final BalanceType balanceType) throws CantLoadTableToMemoryException {
         DatabaseTable assetIssuerWalletTable = getAssetIssuerWalletTable();
-        assetIssuerWalletTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_VERIFICATION_ID_COLUMN_NAME, transactionId, DatabaseFilterType.EQUAL);
-        assetIssuerWalletTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TYPE_COLUMN_NAME, transactionType.getCode(), DatabaseFilterType.EQUAL);
-        assetIssuerWalletTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, balanceType.getCode(), DatabaseFilterType.EQUAL);
+        assetIssuerWalletTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_VERIFICATION_ID_COLUMN_NAME, transactionId, DatabaseFilterType.EQUAL);
+        assetIssuerWalletTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_TYPE_COLUMN_NAME, transactionType.getCode(), DatabaseFilterType.EQUAL);
+        assetIssuerWalletTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TYPE_COLUMN_NAME, balanceType.getCode(), DatabaseFilterType.EQUAL);
         assetIssuerWalletTable.loadToMemory();
         return !assetIssuerWalletTable.getRecords().isEmpty();
     }
@@ -509,16 +509,12 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         }
     }
 
-    private List<AssetIssuerWalletList> getCurrentAvailableBalanceByAssets() throws CantGetBalanceRecordException {
-        return getCurrentBalanceByAsset(BalanceType.AVAILABLE);
-    }
-
     private long getCurrentBookBalance() throws CantGetBalanceRecordException {
         return getCurrentBalance(BalanceType.BOOK);
     }
 
-    private List<AssetIssuerWalletList> getCurrentBookBalanceByAssets() throws CantGetBalanceRecordException {
-        return getCurrentBalanceByAsset(BalanceType.BOOK);
+    private List<AssetIssuerWalletList> getCurrentBalanceByAssets() throws CantGetBalanceRecordException {
+        return getCurrentBalanceByAsset();
     }
 
     private long getCurrentBalance(final BalanceType balanceType) throws CantGetBalanceRecordException {
@@ -535,33 +531,18 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         return balanceAmount;
     }
 
-    private List<AssetIssuerWalletList> getCurrentBalanceByAsset(final BalanceType balanceType) throws CantGetBalanceRecordException {
+    private List<AssetIssuerWalletList> getCurrentBalanceByAsset() throws CantGetBalanceRecordException {
         List<AssetIssuerWalletList> issuerWalletBalances = new ArrayList<>();
-        if (balanceType == BalanceType.AVAILABLE) {
-            for (DatabaseTableRecord record : getBalancesRecord()) {
-                AssetIssuerWalletList assetIssuerWalletBalance = new AssetIssuerWalletBalance();
-                assetIssuerWalletBalance.setName(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_NAME_COLUMN_NAME));
-                assetIssuerWalletBalance.setDescription(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_DESCRIPTION_COLUMN_NAME));
-                assetIssuerWalletBalance.setAssetPublicKey(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_ASSET_PUBLIC_KEY_COLUMN_NAME));
-                assetIssuerWalletBalance.setBookBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_BOOK_BALANCE_COLUMN_NAME));
-                assetIssuerWalletBalance.setAvailableBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_AVAILABLE_BALANCE_COLUMN_NAME));
-                assetIssuerWalletBalance.setQuantityBookBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_QUANTITY_BOOK_BALANCE_COLUMN_NAME));
-                assetIssuerWalletBalance.setQuantityAvailableBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_QUANTITY_AVAILABLE_BALANCE_COLUMN_NAME));
-                issuerWalletBalances.add(assetIssuerWalletBalance);
-            }
-        } else {
-            for (DatabaseTableRecord record : getBalancesRecord()) {
-                AssetIssuerWalletBalance assetIssuerWalletBalance = new AssetIssuerWalletBalance();
-                assetIssuerWalletBalance.setName(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_NAME_COLUMN_NAME));
-                assetIssuerWalletBalance.setDescription(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_DESCRIPTION_COLUMN_NAME));
-                assetIssuerWalletBalance.setAssetPublicKey(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_ASSET_PUBLIC_KEY_COLUMN_NAME));
-                assetIssuerWalletBalance.setAvailableBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_AVAILABLE_BALANCE_COLUMN_NAME));
-                assetIssuerWalletBalance.setBookBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_BOOK_BALANCE_COLUMN_NAME));
-                assetIssuerWalletBalance.setQuantityBookBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_QUANTITY_BOOK_BALANCE_COLUMN_NAME));
-                assetIssuerWalletBalance.setQuantityAvailableBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_QUANTITY_AVAILABLE_BALANCE_COLUMN_NAME));
-                issuerWalletBalances.add(assetIssuerWalletBalance);
-            }
-
+        for (DatabaseTableRecord record : getBalancesRecord()) {
+            AssetIssuerWalletList assetIssuerWalletBalance = new AssetIssuerWalletBalance();
+            assetIssuerWalletBalance.setName(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_NAME_COLUMN_NAME));
+            assetIssuerWalletBalance.setDescription(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_DESCRIPTION_COLUMN_NAME));
+            assetIssuerWalletBalance.setAssetPublicKey(record.getStringValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_ASSET_PUBLIC_KEY_COLUMN_NAME));
+            assetIssuerWalletBalance.setBookBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_BOOK_BALANCE_COLUMN_NAME));
+            assetIssuerWalletBalance.setAvailableBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_AVAILABLE_BALANCE_COLUMN_NAME));
+            assetIssuerWalletBalance.setQuantityBookBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_QUANTITY_BOOK_BALANCE_COLUMN_NAME));
+            assetIssuerWalletBalance.setQuantityAvailableBalance(record.getLongValue(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_QUANTITY_AVAILABLE_BALANCE_COLUMN_NAME));
+            issuerWalletBalances.add(assetIssuerWalletBalance);
         }
         return issuerWalletBalances;
     }
@@ -579,7 +560,7 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
     private DatabaseTableRecord getBalancesByAssetRecord(String assetPublicKey) throws CantGetBalanceRecordException {
         try {
             DatabaseTable balancesTable = getBalancesTable();//database.getTable(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_NAME);;
-            balancesTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
+            balancesTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_WALLET_ISSUER_BALANCE_TABLE_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
             balancesTable.loadToMemory();
             if (!balancesTable.getRecords().isEmpty()) {
                 return balancesTable.getRecords().get(0);
@@ -692,7 +673,7 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         try {
             DatabaseTable assetStatisticTable;
             assetStatisticTable = database.getTable(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_TABLE_NAME);
-            assetStatisticTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_NAME_COLUMN_NAME, assetName, DatabaseFilterType.EQUAL);
+            assetStatisticTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_NAME_COLUMN_NAME, assetName, DatabaseFilterType.EQUAL);
             assetStatisticTable.loadToMemory();
 
             if (assetStatisticTable.getRecords().isEmpty()) {
@@ -715,8 +696,8 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         try {
             DatabaseTable assetStatisticTable;
             assetStatisticTable = database.getTable(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_TABLE_NAME);
-            assetStatisticTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_NAME_COLUMN_NAME, assetName, DatabaseFilterType.EQUAL);
-            assetStatisticTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_CURRENT_STATUS_COLUMN_NAME, status.getCode(), DatabaseFilterType.EQUAL);
+            assetStatisticTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_NAME_COLUMN_NAME, assetName, DatabaseFilterType.EQUAL);
+            assetStatisticTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_CURRENT_STATUS_COLUMN_NAME, status.getCode(), DatabaseFilterType.EQUAL);
             assetStatisticTable.loadToMemory();
 
             if (assetStatisticTable.getRecords().isEmpty()) {
@@ -760,7 +741,7 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         try {
             DatabaseTable assetStatisticTable;
             assetStatisticTable = database.getTable(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_TABLE_NAME);
-            assetStatisticTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_CURRENT_STATUS_COLUMN_NAME, status.getCode(), DatabaseFilterType.EQUAL);
+            assetStatisticTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_CURRENT_STATUS_COLUMN_NAME, status.getCode(), DatabaseFilterType.EQUAL);
             assetStatisticTable.loadToMemory();
 
             if (assetStatisticTable.getRecords().isEmpty()) {
@@ -786,7 +767,7 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         try {
             DatabaseTable assetStatisticTable;
             assetStatisticTable = database.getTable(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_TABLE_NAME);
-            assetStatisticTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
+            assetStatisticTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
             assetStatisticTable.loadToMemory();
 
             if (assetStatisticTable.getRecords().isEmpty()) {
@@ -809,13 +790,14 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         try {
             DatabaseTable assetStatisticTable;
             assetStatisticTable = database.getTable(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_TABLE_NAME);
-            DatabaseTableRecord record = assetStatisticTable.getRecordFromPk(assetPublicKey);
+            assetStatisticTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
+            assetStatisticTable.loadToMemory();
 
-            if (record == null) {
+            if (assetStatisticTable.getRecords().isEmpty()) {
                 throw new RecordsNotFoundException(null, context, "");
             }
 
-            return record.getStringValue(column);
+            return assetStatisticTable.getRecords().get(0).getStringValue(column);
         } catch (RecordsNotFoundException e) {
             throw e;
         } catch (Exception e) {
@@ -847,7 +829,7 @@ public class AssetIssuerWalletDao implements DealsWithPluginFileSystem {
         try {
             DatabaseTable assetStatisticTable;
             assetStatisticTable = database.getTable(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_TABLE_NAME);
-            assetStatisticTable.setStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
+            assetStatisticTable.addStringFilter(AssetWalletIssuerDatabaseConstant.ASSET_STATISTIC_ASSET_PUBLIC_KEY_COLUMN_NAME, assetPublicKey, DatabaseFilterType.EQUAL);
             assetStatisticTable.loadToMemory();
 
             if (assetStatisticTable.getRecords().isEmpty()) {

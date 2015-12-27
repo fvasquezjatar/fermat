@@ -5,6 +5,7 @@ import com.bitdubai.fermat_api.FermatException;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.abstract_classes.AbstractPlugin;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.annotations.NeededAddonReference;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.annotations.NeededPluginReference;
+import com.bitdubai.fermat_api.layer.all_definition.common.system.interfaces.FermatManager;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.utils.PluginVersionReference;
 import com.bitdubai.fermat_api.layer.all_definition.developer.DatabaseManagerForDevelopers;
 import com.bitdubai.fermat_api.layer.all_definition.developer.DeveloperDatabase;
@@ -17,7 +18,7 @@ import com.bitdubai.fermat_api.layer.all_definition.enums.Platforms;
 import com.bitdubai.fermat_api.layer.all_definition.enums.Plugins;
 import com.bitdubai.fermat_api.layer.all_definition.enums.ServiceStatus;
 import com.bitdubai.fermat_api.layer.all_definition.util.Version;
-import com.bitdubai.fermat_api.layer.dmp_world.wallet.exceptions.CantStartAgentException;
+import com.bitdubai.fermat_api.CantStartAgentException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.Database;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.PluginDatabaseSystem;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantCreateDatabaseException;
@@ -25,11 +26,10 @@ import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.Cant
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.DatabaseNotFoundException;
 import com.bitdubai.fermat_api.layer.osa_android.file_system.PluginFileSystem;
 import com.bitdubai.fermat_api.layer.all_definition.enums.FiatCurrency;
+import com.bitdubai.fermat_cbp_api.all_definition.enums.OriginTransaction;
 import com.bitdubai.fermat_cbp_api.all_definition.enums.TransactionStatusRestockDestock;
-import com.bitdubai.fermat_cbp_api.layer.cbp_stock_transactions.cash_money_destock.exceptions.CantCreateCashMoneyDestockException;
-import com.bitdubai.fermat_cbp_api.layer.cbp_stock_transactions.cash_money_destock.interfaces.CashMoneyDestockManager;
-import com.bitdubai.fermat_cbp_api.layer.cbp_stock_transactions.cash_money_restock.exceptions.CantCreateCashMoneyRestockException;
-import com.bitdubai.fermat_cbp_api.layer.cbp_stock_transactions.cash_money_restock.interfaces.CashMoneyRestockManager;
+import com.bitdubai.fermat_cbp_api.layer.stock_transactions.cash_money_restock.exceptions.CantCreateCashMoneyRestockException;
+import com.bitdubai.fermat_cbp_api.layer.stock_transactions.cash_money_restock.interfaces.CashMoneyRestockManager;
 import com.bitdubai.fermat_cbp_api.layer.wallet.crypto_broker.interfaces.CryptoBrokerWalletManager;
 import com.bitdubai.fermat_cbp_plugin.layer.stock_transactions.cash_money_restock.developer.bitdubai.version_1.database.StockTransactionsCashMoneyRestockDatabaseConstants;
 import com.bitdubai.fermat_cbp_plugin.layer.stock_transactions.cash_money_restock.developer.bitdubai.version_1.database.StockTransactionsCashMoneyRestockDatabaseFactory;
@@ -40,9 +40,8 @@ import com.bitdubai.fermat_cbp_plugin.layer.stock_transactions.cash_money_restoc
 import com.bitdubai.fermat_cbp_plugin.layer.stock_transactions.cash_money_restock.developer.bitdubai.version_1.structure.StockTransactionCashMoneyRestockManager;
 import com.bitdubai.fermat_cbp_plugin.layer.stock_transactions.cash_money_restock.developer.bitdubai.version_1.structure.events.StockTransactionsCashMoneyRestockMonitorAgent;
 import com.bitdubai.fermat_csh_api.layer.csh_cash_money_transaction.hold.interfaces.CashHoldTransactionManager;
-import com.bitdubai.fermat_csh_api.layer.csh_cash_money_transaction.unhold.interfaces.CashUnholdTransactionManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedPluginExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedPluginExceptionSeverity;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.interfaces.EventManager;
 
 import java.sql.Timestamp;
@@ -53,8 +52,6 @@ import java.util.UUID;
  * Created by franklin on 16/11/15.
  */
 public class StockTransactionsCashMoneyRestockPluginRoot extends AbstractPlugin  implements
-        //TODO: Implementar DealsWiths de los modulos BNK y la Wallet CBP
-        CashMoneyRestockManager,
         DatabaseManagerForDevelopers {
 
     public StockTransactionsCashMoneyRestockPluginRoot() {
@@ -75,12 +72,11 @@ public class StockTransactionsCashMoneyRestockPluginRoot extends AbstractPlugin 
     @NeededAddonReference(platform = Platforms.PLUG_INS_PLATFORM, layer = Layers.PLATFORM_SERVICE, addon = Addons.EVENT_MANAGER)
     private EventManager eventManager;
 
-    //TODO:Descomentar luego que esten arrancados estos Plugines: plugin = Plugins.CRYPTO_WALLET, plugin = Plugins.BITDUBAI_CSH_MONEY_TRANSACTION_HOLD
-    //@NeededPluginReference(platform = Platforms.CRYPTO_BROKER_PLATFORM, layer = Layers.WALLET, plugin = Plugins.CRYPTO_WALLET)
+    @NeededPluginReference(platform = Platforms.CRYPTO_BROKER_PLATFORM, layer = Layers.WALLET, plugin = Plugins.CRYPTO_BROKER_WALLET)
     CryptoBrokerWalletManager cryptoBrokerWalletManager;
 
-    //@NeededPluginReference(platform = Platforms.CASH_PLATFORM, layer = Layers.TRANSACTION, plugin = Plugins.BITDUBAI_CSH_MONEY_TRANSACTION_HOLD)
-    CashUnholdTransactionManager cashUnHoldTransactionManager;
+    @NeededPluginReference(platform = Platforms.CASH_PLATFORM, layer = Layers.CASH_MONEY_TRANSACTION, plugin = Plugins.BITDUBAI_CSH_MONEY_TRANSACTION_HOLD)
+    CashHoldTransactionManager cashHoldTransactionManager;
 
 
     @Override
@@ -91,7 +87,7 @@ public class StockTransactionsCashMoneyRestockPluginRoot extends AbstractPlugin 
 
             //Buscar la manera de arrancar el agente solo cuando hayan transacciones diferentes a COMPLETED
             System.out.println("******* Init Cash Money Restock ******");
-            //testRestock();
+
             startMonitorAgent();
 
             database.closeDatabase();
@@ -120,6 +116,11 @@ public class StockTransactionsCashMoneyRestockPluginRoot extends AbstractPlugin 
     }
 
     @Override
+    public FermatManager getManager() {
+        return stockTransactionCashMoneyRestockManager;
+    }
+
+    @Override
     public List<DeveloperDatabase> getDatabaseList(DeveloperObjectFactory developerObjectFactory) {
         StockTransactionsCashMoneyRestockDeveloperFactory stockTransactionsCashMoneyRestockDeveloperFactory = new StockTransactionsCashMoneyRestockDeveloperFactory(pluginDatabaseSystem, pluginId);
         return stockTransactionsCashMoneyRestockDeveloperFactory.getDatabaseList(developerObjectFactory);
@@ -144,33 +145,6 @@ public class StockTransactionsCashMoneyRestockPluginRoot extends AbstractPlugin 
         return developerDatabaseTableRecordList;
     }
 
-    @Override
-    public void createTransactionRestock(String publicKeyActor, FiatCurrency fiatCurrency, String cbpWalletPublicKey, String cshWalletPublicKey, String cashReference, float amount, String memo) throws CantCreateCashMoneyRestockException {
-
-        java.util.Date date = new java.util.Date();
-        Timestamp timestamp = new Timestamp(date.getTime());
-        CashMoneyRestockTransactionImpl cashMoneyRestockTransaction = new CashMoneyRestockTransactionImpl(
-                UUID.randomUUID(),
-                publicKeyActor,
-                fiatCurrency,
-                cbpWalletPublicKey,
-                cshWalletPublicKey,
-                memo,
-                "INIT TRANSACTION",
-                cashReference,
-                amount,
-                timestamp,
-                TransactionStatusRestockDestock.INIT_TRANSACTION);
-
-        try {
-            stockTransactionCashMoneyRestockManager.saveCashMoneyRestockTransactionData(cashMoneyRestockTransaction);
-        } catch (DatabaseOperationException e) {
-            e.printStackTrace();
-        } catch (MissingCashMoneyRestockDataException e) {
-            e.printStackTrace();
-        }
-    }
-
     private StockTransactionsCashMoneyRestockMonitorAgent stockTransactionsCashMoneyRestockMonitorAgent;
     /**
      * This method will start the Monitor Agent that watches the asyncronic process registered in the bank money restock plugin
@@ -182,20 +156,13 @@ public class StockTransactionsCashMoneyRestockPluginRoot extends AbstractPlugin 
                     errorManager,
                     stockTransactionCashMoneyRestockManager,
                     cryptoBrokerWalletManager,
-                    cashUnHoldTransactionManager
+                    cashHoldTransactionManager,
+                    pluginDatabaseSystem,
+                    pluginId
             );
 
             stockTransactionsCashMoneyRestockMonitorAgent.start();
         }else stockTransactionsCashMoneyRestockMonitorAgent.start();
     }
-
-    private void testRestock(){
-        try {
-            createTransactionRestock("publicKeyActor", FiatCurrency.VENEZUELAN_BOLIVAR, "cbpWalletPublicKey", "cshWalletPublicKey", "cashReference", 250, "memo");
-        } catch (CantCreateCashMoneyRestockException e) {
-            e.printStackTrace();
-        }
-    }
-
 
 }

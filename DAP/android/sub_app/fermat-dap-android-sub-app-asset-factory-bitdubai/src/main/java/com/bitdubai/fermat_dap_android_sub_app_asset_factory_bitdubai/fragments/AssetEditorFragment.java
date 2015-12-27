@@ -30,7 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.layer.definition.wallet.views.FermatButton;
 import com.bitdubai.fermat_android_api.layer.definition.wallet.views.FermatCheckBox;
 import com.bitdubai.fermat_android_api.layer.definition.wallet.views.FermatEditText;
@@ -47,7 +47,7 @@ import com.bitdubai.fermat_dap_api.layer.all_definition.enums.State;
 import com.bitdubai.fermat_dap_api.layer.dap_middleware.dap_asset_factory.enums.AssetBehavior;
 import com.bitdubai.fermat_dap_api.layer.dap_middleware.dap_asset_factory.interfaces.AssetFactory;
 import com.bitdubai.fermat_dap_api.layer.dap_module.asset_factory.interfaces.AssetFactoryModuleManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
 import com.bitdubai.fermat_wpd_api.layer.wpd_middleware.wallet_manager.interfaces.InstalledWallet;
 
 import java.io.ByteArrayOutputStream;
@@ -64,7 +64,7 @@ import java.util.UUID;
  *
  * @author Francisco Vasquez
  */
-public class AssetEditorFragment extends FermatFragment implements View.OnClickListener {
+public class AssetEditorFragment extends AbstractFermatFragment implements View.OnClickListener {
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_LOAD_IMAGE = 2;
@@ -114,8 +114,8 @@ public class AssetEditorFragment extends FermatFragment implements View.OnClickL
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            manager = ((AssetFactorySession) subAppsSession).getManager();
-            errorManager = subAppsSession.getErrorManager();
+            manager = ((AssetFactorySession) appSession).getModuleManager();
+            errorManager = appSession.getErrorManager();
             if (!isEdit) {
                 final ProgressDialog dialog = new ProgressDialog(getActivity());
                 dialog.setTitle("Asset Editor");
@@ -406,7 +406,7 @@ public class AssetEditorFragment extends FermatFragment implements View.OnClickL
                 dialog.dismiss();
                 if (getActivity() != null) {
                     Toast.makeText(getActivity(), "Asset deleted successfully", Toast.LENGTH_SHORT).show();
-                    changeActivity(Activities.DAP_MAIN.getCode(), subAppsSession.getAppPublicKey());
+                    changeActivity(Activities.DAP_MAIN.getCode(), appSession.getAppPublicKey());
                 }
             }
 
@@ -435,10 +435,15 @@ public class AssetEditorFragment extends FermatFragment implements View.OnClickL
         if (hasResource) {
             List<Resource> resources = new ArrayList<>();
             Resource resource = new Resource();
-            resource.setId(UUID.randomUUID());
+            if (asset.getResources() != null && asset.getResources().size() > 0) {
+                resource.setId(asset.getResources().get(0).getId());
+            } else {
+                resource.setId(UUID.randomUUID());
+            }
             resource.setResourceType(ResourceType.IMAGE);
             resource.setResourceDensity(ResourceDensity.HDPI);
-            resource.setResourceBinayData(toByteArray(((BitmapDrawable) takePicture.getDrawable()).getBitmap()));
+//            resource.setResourceBinayData(toByteArray(((BitmapDrawable) takePicture.getDrawable()).getBitmap()));
+            resource.setResourceBinayData(toByteArray(takePicture));
             resources.add(resource);
             asset.setResources(resources);
         } else
@@ -478,7 +483,7 @@ public class AssetEditorFragment extends FermatFragment implements View.OnClickL
                 dialog.dismiss();
                 if (getActivity() != null) {
                     Toast.makeText(getActivity(), String.format("Asset %s has been created", asset.getName()), Toast.LENGTH_SHORT).show();
-                    changeActivity(Activities.DAP_MAIN.getCode(), subAppsSession.getAppPublicKey());
+                    changeActivity(Activities.DAP_MAIN.getCode(), appSession.getAppPublicKey());
                 }
             }
 
@@ -504,14 +509,20 @@ public class AssetEditorFragment extends FermatFragment implements View.OnClickL
     }
 
     /**
-     * Bitmap to byte[]
+     * ImageView to byte[]
      *
-     * @param bitmap Bitmap
      * @return byte array
      */
-    private byte[] toByteArray(Bitmap bitmap) {
+    private byte[] toByteArray(ImageView imageView) {
+        imageView.setDrawingCacheEnabled(true);
+        imageView.buildDrawingCache();
+        Bitmap bm = imageView.getDrawingCache();
+
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        return stream.toByteArray();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        return byteArray;
     }
+
+
 }

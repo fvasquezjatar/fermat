@@ -1,6 +1,5 @@
 package com.bitdubai.reference_niche_wallet.bitcoin_wallet.fragments.wallet_final_version;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -10,21 +9,17 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.bitdubai.android_fermat_ccp_wallet_bitcoin.R;
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatWalletFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_api.layer.all_definition.enums.Engine;
 import com.bitdubai.fermat_api.layer.all_definition.enums.UISource;
-import com.bitdubai.fermat_api.layer.all_definition.navigation_structure.enums.Activities;
-import com.bitdubai.fermat_ccp_api.layer.module.intra_user.exceptions.CantGetActiveLoginIdentityException;
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserModuleManager;
-import com.bitdubai.fermat_ccp_api.layer.wallet_module.crypto_wallet.exceptions.CantGetCryptoWalletException;
-import com.bitdubai.fermat_ccp_api.layer.wallet_module.crypto_wallet.exceptions.CantListCryptoWalletIntraUserIdentityException;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedUIExceptionSeverity;
 import com.bitdubai.reference_niche_wallet.bitcoin_wallet.session.ReferenceWalletSession;
 
 /**
  * Created by mati on 2015.11.25..
  */
-public class NoIdentityFragment extends FermatWalletFragment {
+public class NoIdentityFragment extends AbstractFermatFragment {
 
 
     /**
@@ -47,8 +42,7 @@ public class NoIdentityFragment extends FermatWalletFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            referenceWalletSession = (ReferenceWalletSession) walletSession;
-            intraUserModuleManager = referenceWalletSession.getIntraUserModuleManager();
+            referenceWalletSession = (ReferenceWalletSession) appSession;
 
         } catch (Exception e){
             e.printStackTrace();
@@ -78,7 +72,7 @@ public class NoIdentityFragment extends FermatWalletFragment {
             public void onClick(View v) {
                 try {
                     Object[] object = new Object[2];
-                    changeApp(Engine.BITCOIN_WALLET_CALL_INTRA_USER_IDENTITY, walletSession.getIdentityConnection(), object);
+                    changeApp(Engine.BITCOIN_WALLET_CALL_INTRA_USER_IDENTITY, ((ReferenceWalletSession)appSession).getIdentityConnection(), object);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -34,7 +34,7 @@ import com.bitdubai.fermat_api.layer.all_definition.resources_structure.enums.In
 import com.bitdubai.fermat_api.layer.all_definition.resources_structure.enums.ScreenOrientation;
 import com.bitdubai.fermat_api.layer.all_definition.util.Version;
 import com.bitdubai.fermat_api.layer.all_definition.util.XMLParser;
-import com.bitdubai.fermat_api.layer.dmp_middleware.wallet_navigation_structure.exceptions.CantGetWalletNavigationStructureException;
+import com.bitdubai.fermat_wpd_api.all_definition.exceptions.CantGetWalletNavigationStructureException;
 import com.bitdubai.fermat_api.layer.dmp_network_service.CantCheckResourcesException;
 import com.bitdubai.fermat_api.layer.dmp_network_service.CantGetResourcesException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.PluginDatabaseSystem;
@@ -47,7 +47,7 @@ import com.bitdubai.fermat_api.layer.osa_android.file_system.exceptions.CantCrea
 import com.bitdubai.fermat_api.layer.osa_android.file_system.exceptions.CantPersistFileException;
 import com.bitdubai.fermat_api.layer.osa_android.file_system.exceptions.FileNotFoundException;
 import com.bitdubai.fermat_api.layer.osa_android.location_system.Location;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.enums.EventType;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.events.WalletNavigationStructureDownloadedEvent;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.events.WalletUninstalledEvent;
@@ -366,6 +366,36 @@ public class WalletResourcesNetworkServicePluginRoot extends AbstractPlugin impl
     @Override
     public boolean isRegister() {
         return false;
+    }
+
+    @Override
+    public void setPlatformComponentProfilePluginRoot(PlatformComponentProfile platformComponentProfile) {
+
+    }
+
+    @Override
+    public void initializeCommunicationNetworkServiceConnectionManager() {
+
+    }
+
+    @Override
+    public String getIdentityPublicKey() {
+        return null;
+    }
+
+    @Override
+    public String getAlias() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public String getExtraData() {
+        return null;
     }
 
     /**

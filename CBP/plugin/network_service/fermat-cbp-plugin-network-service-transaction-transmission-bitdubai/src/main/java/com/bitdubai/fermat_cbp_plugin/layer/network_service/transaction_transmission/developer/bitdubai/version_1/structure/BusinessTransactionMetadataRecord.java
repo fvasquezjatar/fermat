@@ -1,10 +1,10 @@
 package com.bitdubai.fermat_cbp_plugin.layer.network_service.transaction_transmission.developer.bitdubai.version_1.structure;
 
 import com.bitdubai.fermat_api.layer.all_definition.components.enums.PlatformComponentType;
-import com.bitdubai.fermat_cbp_api.all_definition.enums.ContractStatus;
-import com.bitdubai.fermat_cbp_api.layer.network_service.TransactionTransmission.enums.BusinessTransactionTransactionType;
-import com.bitdubai.fermat_cbp_api.layer.network_service.TransactionTransmission.enums.TransactionTransmissionStates;
-import com.bitdubai.fermat_cbp_api.layer.network_service.TransactionTransmission.interfaces.BusinessTransactionMetadata;
+import com.bitdubai.fermat_cbp_api.all_definition.enums.ContractTransactionStatus;
+import com.bitdubai.fermat_cbp_api.layer.network_service.transaction_transmission.enums.BusinessTransactionTransactionType;
+import com.bitdubai.fermat_cbp_api.layer.network_service.transaction_transmission.enums.TransactionTransmissionStates;
+import com.bitdubai.fermat_cbp_api.layer.network_service.transaction_transmission.interfaces.BusinessTransactionMetadata;
 
 import java.util.UUID;
 
@@ -14,7 +14,7 @@ import java.util.UUID;
 public class BusinessTransactionMetadataRecord implements BusinessTransactionMetadata {
 
     String contractHash;
-    ContractStatus contractStatus;
+    ContractTransactionStatus contractTransactionStatus;
     String receiverId;
     PlatformComponentType receiverType;
     String senderId;
@@ -28,7 +28,7 @@ public class BusinessTransactionMetadataRecord implements BusinessTransactionMet
     boolean pendingFlag;
 
     public BusinessTransactionMetadataRecord(String contractHash,
-                                             ContractStatus contractStatus,
+                                             ContractTransactionStatus contractTransactionStatus,
                                              String receiverId,
                                              PlatformComponentType receiverType,
                                              String senderId,
@@ -41,7 +41,7 @@ public class BusinessTransactionMetadataRecord implements BusinessTransactionMet
                                              TransactionTransmissionStates transactionTransmissionStates
     ){
         this.contractHash=contractHash;
-        this.contractStatus=contractStatus;
+        this.contractTransactionStatus=contractTransactionStatus;
         this.receiverId=receiverId;
         this.receiverType = receiverType;
         this.senderId=senderId;
@@ -62,8 +62,8 @@ public class BusinessTransactionMetadataRecord implements BusinessTransactionMet
     }
 
     @Override
-    public ContractStatus getContractStatus() {
-        return this.contractStatus;
+    public ContractTransactionStatus getContractTransactionStatus() {
+        return this.contractTransactionStatus;
     }
 
     @Override

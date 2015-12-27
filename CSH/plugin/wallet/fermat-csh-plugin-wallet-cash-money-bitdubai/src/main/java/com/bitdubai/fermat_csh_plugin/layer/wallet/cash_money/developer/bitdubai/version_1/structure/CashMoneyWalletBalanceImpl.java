@@ -4,16 +4,19 @@ import com.bitdubai.fermat_api.FermatException;
 import com.bitdubai.fermat_api.layer.all_definition.enums.Plugins;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.PluginDatabaseSystem;
 import com.bitdubai.fermat_csh_api.all_definition.enums.BalanceType;
+import com.bitdubai.fermat_csh_api.all_definition.enums.TransactionType;
+import com.bitdubai.fermat_csh_api.all_definition.exceptions.CashMoneyWalletInsufficientFundsException;
 import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantGetCashMoneyWalletBalanceException;
 import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantRegisterCreditException;
 import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantRegisterDebitException;
 import com.bitdubai.fermat_csh_api.layer.csh_wallet.interfaces.CashMoneyWalletBalance;
-import com.bitdubai.fermat_csh_api.layer.csh_wallet.interfaces.CashMoneyWalletTransaction;
 import com.bitdubai.fermat_csh_plugin.layer.wallet.cash_money.developer.bitdubai.version_1.database.CashMoneyWalletDao;
 import com.bitdubai.fermat_csh_plugin.layer.wallet.cash_money.developer.bitdubai.version_1.exceptions.CantRegisterCashMoneyWalletTransactionException;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedPluginExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedPluginExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -30,11 +33,14 @@ public class CashMoneyWalletBalanceImpl implements CashMoneyWalletBalance {
     private CashMoneyWalletDao dao;
 
 
-    public CashMoneyWalletBalanceImpl(final PluginDatabaseSystem pluginDatabaseSystem, final UUID pluginId, final ErrorManager errorManager) throws CantGetCashMoneyWalletBalanceException {
+    public CashMoneyWalletBalanceImpl(final PluginDatabaseSystem pluginDatabaseSystem, final UUID pluginId,
+                                      final ErrorManager errorManager, String walletPublicKey, BalanceType balanceType) throws CantGetCashMoneyWalletBalanceException {
         this.pluginDatabaseSystem = pluginDatabaseSystem;
         this.pluginId = pluginId;
         this.errorManager = errorManager;
-
+        this.balanceType = balanceType;
+        this.walletPublicKey = walletPublicKey;
+        
         try {
             this.dao = new CashMoneyWalletDao(pluginDatabaseSystem, pluginId, errorManager);
             dao.initialize();
@@ -46,30 +52,28 @@ public class CashMoneyWalletBalanceImpl implements CashMoneyWalletBalance {
     }
 
     @Override
-    public void changeBalanceTo(BalanceType balanceType){
-        this.balanceType = balanceType;
-    }
-
-    @Override
-    public double getBalance() throws CantGetCashMoneyWalletBalanceException {
+    public BigDecimal getBalance() throws CantGetCashMoneyWalletBalanceException {
         return dao.getWalletBalance(walletPublicKey, balanceType);
     }
 
     @Override
-    public void debit(CashMoneyWalletTransaction cashMoneyWalletTransaction) throws CantRegisterDebitException {
+    public void debit(UUID transactionId, String publicKeyActor, String publicKeyPlugin, BigDecimal amount, String memo) throws CantRegisterDebitException, CashMoneyWalletInsufficientFundsException {
+
         try {
-            dao.debit(walletPublicKey, balanceType, cashMoneyWalletTransaction.getAmount());
-            dao.registerTransaction(cashMoneyWalletTransaction);
+            CashMoneyWalletTransactionImpl transaction = new CashMoneyWalletTransactionImpl(transactionId, this.walletPublicKey, publicKeyActor, publicKeyPlugin, TransactionType.DEBIT, this.balanceType, amount, memo, (new Date().getTime() / 1000));
+            dao.debit(this.walletPublicKey, this.balanceType, amount);
+            dao.registerTransaction(transaction);
         } catch (CantRegisterCashMoneyWalletTransactionException e) {
             throw new CantRegisterDebitException(CantRegisterDebitException.DEFAULT_MESSAGE, e, "Cant insert transaction record into database", null);
         }
     }
 
     @Override
-    public void credit(CashMoneyWalletTransaction cashMoneyWalletTransaction) throws CantRegisterCreditException {
+    public void credit(UUID transactionId, String publicKeyActor, String publicKeyPlugin, BigDecimal amount, String memo) throws CantRegisterCreditException {
         try {
-            dao.credit(walletPublicKey, balanceType, cashMoneyWalletTransaction.getAmount());
-            dao.registerTransaction(cashMoneyWalletTransaction);
+            CashMoneyWalletTransactionImpl transaction = new CashMoneyWalletTransactionImpl(transactionId, this.walletPublicKey, publicKeyActor, publicKeyPlugin, TransactionType.CREDIT, this.balanceType, amount, memo, (new Date().getTime() / 1000));
+            dao.credit(this.walletPublicKey, this.balanceType, amount);
+            dao.registerTransaction(transaction);
         } catch (CantRegisterCashMoneyWalletTransactionException e) {
             throw new CantRegisterCreditException(CantRegisterCreditException.DEFAULT_MESSAGE, e, "Cant insert transaction record into database", null);
         }

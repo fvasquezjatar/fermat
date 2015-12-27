@@ -21,7 +21,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.layer.definition.wallet.utils.ImagesUtils;
 import com.bitdubai.fermat_android_api.layer.definition.wallet.views.FermatCheckBox;
 import com.bitdubai.fermat_android_api.layer.definition.wallet.views.FermatTextView;
@@ -29,16 +29,13 @@ import com.bitdubai.fermat_android_api.ui.interfaces.FermatWorkerCallBack;
 import com.bitdubai.fermat_api.layer.all_definition.navigation_structure.enums.Activities;
 import com.bitdubai.fermat_api.layer.dmp_engine.sub_app_runtime.enums.SubApps;
 import com.bitdubai.fermat_cbp_api.layer.sub_app_module.crypto_broker_identity.interfaces.CryptoBrokerIdentityInformation;
-import com.bitdubai.fermat_cbp_api.layer.sub_app_module.crypto_broker_identity.interfaces.CryptoBrokerIdentityModuleManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedSubAppExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedSubAppExceptionSeverity;
 import com.bitdubai.sub_app.crypto_broker_identity.R;
-import com.bitdubai.sub_app.crypto_broker_identity.session.CryptoBrokerIdentitySubAppSession;
 import com.bitdubai.sub_app.crypto_broker_identity.util.CommonLogger;
 import com.bitdubai.sub_app.crypto_broker_identity.util.PublishIdentityWorker;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static com.bitdubai.sub_app.crypto_broker_identity.session.CryptoBrokerIdentitySubAppSession.IDENTITY_INFO;
 import static com.bitdubai.sub_app.crypto_broker_identity.util.PublishIdentityWorker.DATA_NOT_CHANGED;
@@ -49,7 +46,7 @@ import static com.bitdubai.sub_app.crypto_broker_identity.util.PublishIdentityWo
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EditCryptoBrokerIdentityFragment extends FermatFragment implements FermatWorkerCallBack {
+public class EditCryptoBrokerIdentityFragment extends AbstractFermatFragment implements FermatWorkerCallBack {
     // Constants
     private static final String TAG = "EditBrokerIdentity";
     private static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -78,7 +75,7 @@ public class EditCryptoBrokerIdentityFragment extends FermatFragment implements 
         super.onCreate(savedInstanceState);
 
         try {
-            errorManager = subAppsSession.getErrorManager();
+            errorManager = appSession.getErrorManager();
         } catch (Exception ex) {
             CommonLogger.exception(TAG, ex.getMessage(), ex);
         }
@@ -106,7 +103,7 @@ public class EditCryptoBrokerIdentityFragment extends FermatFragment implements 
         mBrokerImage = (ImageView) layout.findViewById(R.id.crypto_broker_image);
         FermatCheckBox publishIdentityCheckBox = (FermatCheckBox) layout.findViewById(R.id.publish_identity);
 
-        final CryptoBrokerIdentityInformation identityInfo = (CryptoBrokerIdentityInformation) subAppsSession.getData(IDENTITY_INFO);
+        final CryptoBrokerIdentityInformation identityInfo = (CryptoBrokerIdentityInformation) appSession.getData(IDENTITY_INFO);
 
         if (identityInfo != null) {
             mBrokerName.setText(identityInfo.getAlias());
@@ -210,7 +207,7 @@ public class EditCryptoBrokerIdentityFragment extends FermatFragment implements 
 
         // TODO falta implementar funcionalidad para editar info del identity en el backend
 
-        PublishIdentityWorker publishIdentityWorker = new PublishIdentityWorker(getActivity(), subAppsSession, wantPublishIdentity, this);
+        PublishIdentityWorker publishIdentityWorker = new PublishIdentityWorker(getActivity(), appSession, wantPublishIdentity, this);
 
         executor = publishIdentityWorker.execute();
     }
@@ -243,7 +240,7 @@ public class EditCryptoBrokerIdentityFragment extends FermatFragment implements 
             int resultCode = (int) result[0];
 
             if (resultCode == SUCCESS || resultCode == DATA_NOT_CHANGED) {
-                changeActivity(Activities.CBP_SUB_APP_CRYPTO_BROKER_IDENTITY.getCode(), subAppsSession.getAppPublicKey());
+                changeActivity(Activities.CBP_SUB_APP_CRYPTO_BROKER_IDENTITY.getCode(), appSession.getAppPublicKey());
 
             } else if (resultCode == INVALID_ENTRY_DATA) {
                 Toast.makeText(getActivity(), "Please check the submitted data", Toast.LENGTH_LONG).show();

@@ -85,9 +85,9 @@ import com.bitdubai.fermat_p2p_api.layer.p2p_communication.commons.enums.FermatM
 import com.bitdubai.fermat_p2p_api.layer.p2p_communication.commons.enums.FermatMessagesStatus;
 import com.bitdubai.fermat_p2p_api.layer.p2p_communication.commons.exceptions.CantRegisterComponentException;
 import com.bitdubai.fermat_p2p_api.layer.p2p_communication.commons.exceptions.CantRequestListException;
-import com.bitdubai.fermat_pip_api.layer.pip_actor.exception.CantGetLogTool;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedPluginExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.actor.exception.CantGetLogTool;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedPluginExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.interfaces.EventManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -397,7 +397,7 @@ public class AssetRedeemPointActorNetworkServicePluginRoot extends AbstractNetwo
                  */
                 PlatformComponentProfile platformComponentProfileAssetRedeemPoint = communicationsClientConnection.constructPlatformComponentProfileFactory(actorAssetRedeemPointToRegister.getActorPublicKey(),
                         actorAssetRedeemPointToRegister.getName().toLowerCase().trim(),
-                        actorAssetRedeemPointToRegister.getName(),
+                       actorAssetRedeemPointToRegister.getName(),
                         NetworkServiceType.UNDEFINED,
                         PlatformComponentType.ACTOR_ASSET_REDEEM_POINT,
                         Arrays.toString(actorAssetRedeemPointToRegister.getProfileImage()));
@@ -656,9 +656,9 @@ public class AssetRedeemPointActorNetworkServicePluginRoot extends AbstractNetwo
     }
 
     @Override
-    public DiscoveryQueryParameters constructDiscoveryQueryParamsFactory(PlatformComponentType platformComponentType, NetworkServiceType networkServiceType, String alias, String identityPublicKey, Location location, Double distance, String name, String extraData, Integer firstRecord, Integer numRegister, PlatformComponentType fromOtherPlatformComponentType, NetworkServiceType fromOtherNetworkServiceType) {
+    public DiscoveryQueryParameters constructDiscoveryQueryParamsFactory(PlatformComponentType platformComponentType, NetworkServiceType networkServiceType, String alias,String identityPublicKey, Location location, Double distance, String name, String extraData, Integer firstRecord, Integer numRegister, PlatformComponentType fromOtherPlatformComponentType, NetworkServiceType fromOtherNetworkServiceType) {
         return wsCommunicationsCloudClientManager.getCommunicationsCloudClientConnection().constructDiscoveryQueryParamsFactory(platformComponentType,
-                networkServiceType, alias, identityPublicKey, location, distance, name, extraData, firstRecord, numRegister, fromOtherPlatformComponentType, fromOtherNetworkServiceType);
+                networkServiceType, alias,identityPublicKey, location, distance, name, extraData, firstRecord, numRegister, fromOtherPlatformComponentType, fromOtherNetworkServiceType);
 
     }
 
@@ -1049,7 +1049,7 @@ public class AssetRedeemPointActorNetworkServicePluginRoot extends AbstractNetwo
          * Listen and handle New Message Receive Notification Event
          */
         fermatEventListener = eventManager.getNewListener(P2pEventType.NEW_NETWORK_SERVICE_MESSAGE_RECEIVE_NOTIFICATION);
-        fermatEventListener.setEventHandler(new NewReceiveMessagesNotificationEventHandler(this, eventManager));
+        fermatEventListener.setEventHandler(new NewReceiveMessagesNotificationEventHandler(communicationNetworkServiceConnectionManager, eventManager));
         eventManager.addListener(fermatEventListener);
         listenersAdded.add(fermatEventListener);
 

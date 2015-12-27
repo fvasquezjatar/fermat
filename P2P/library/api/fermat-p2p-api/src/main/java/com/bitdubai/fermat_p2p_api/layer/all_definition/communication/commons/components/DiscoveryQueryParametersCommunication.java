@@ -42,6 +42,7 @@ public class DiscoveryQueryParametersCommunication implements DiscoveryQueryPara
      */
     private String alias;
 
+
     /**
      * Represent the name
      */
@@ -162,7 +163,8 @@ public class DiscoveryQueryParametersCommunication implements DiscoveryQueryPara
         return alias;
     }
 
-    /**
+
+     /**
      * (non-javadoc)
      * @see DiscoveryQueryParameters#getName()
      */

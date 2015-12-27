@@ -17,7 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.ui.interfaces.FermatWorkerCallBack;
 import com.bitdubai.fermat_android_api.ui.util.FermatWorker;
 import com.bitdubai.fermat_api.FermatException;
@@ -33,8 +33,8 @@ import com.bitdubai.fermat_api.layer.dmp_module.wallet_manager.InstalledWallet;
 import com.bitdubai.fermat_api.layer.dmp_module.wallet_manager.WalletManager;
 import com.bitdubai.fermat_api.layer.interface_objects.FermatFolder;
 import com.bitdubai.fermat_dmp.wallet_manager.R;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedUIExceptionSeverity;
 import com.bitdubai.sub_app.wallet_manager.adapter.DesktopAdapter;
 import com.bitdubai.sub_app.wallet_manager.commons.EmptyItem;
 import com.bitdubai.sub_app.wallet_manager.commons.helpers.OnStartDragListener;
@@ -57,7 +57,7 @@ import static android.widget.Toast.makeText;
  */
 
 
-public class DesktopFragment extends FermatFragment implements SearchView.OnCloseListener,
+public class DesktopFragment extends AbstractFermatFragment implements SearchView.OnCloseListener,
         SearchView.OnQueryTextListener,
         SwipeRefreshLayout.OnRefreshListener,
         OnStartDragListener,
@@ -115,9 +115,9 @@ public class DesktopFragment extends FermatFragment implements SearchView.OnClos
         try {
 
             // setting up  module
-            //desktopSession = ((DesktopSession) subAppsSession);
+            //desktopSession = ((DesktopSession) appSession);
             //moduleManager = desktopSession.getModuleManager();
-            //errorManager = subAppsSession.getErrorManager();
+            //errorManager = appSession.getErrorManager();
 
 //            //get search name if
 //            searchName = getFermatScreenSwapper().connectBetweenAppsData()[0].toString();
@@ -156,6 +156,8 @@ public class DesktopFragment extends FermatFragment implements SearchView.OnClos
    //         Toast.makeText(getActivity().getApplicationContext(), "Oooops! recovering from system error", Toast.LENGTH_SHORT).show();
             ex.printStackTrace();
 
+        }catch (OutOfMemoryError outOfMemoryError){
+            outOfMemoryError.printStackTrace();
         }
 
 
@@ -400,7 +402,37 @@ public class DesktopFragment extends FermatFragment implements SearchView.OnClos
             item.setPosition(5);
             lstItemsWithIcon.add(item);
 
+            //Banking Wallet
+            installedWallet= new com.bitdubai.sub_app.wallet_manager.structure.provisory_classes.InstalledWallet(WalletCategory.REFERENCE_WALLET,
+                    WalletType.REFERENCE,
+                    new ArrayList<InstalledSkin>(),
+                    new ArrayList<InstalledLanguage>(),
+                    "banking_wallet",
+                    "Banking Wallet",
+                    "banking_wallet",
+                    "wallet_banking_platform_identifier",
+                    new Version(1,0,0));
+            lstInstalledWallet.add(installedWallet);
+            item = new Item(installedWallet);
+            item.setIconResource(R.drawable.bank_wallet_xxhdpi);
+            item.setPosition(6);
+            lstItemsWithIcon.add(item);
 
+            //Cash Wallet
+            installedWallet= new com.bitdubai.sub_app.wallet_manager.structure.provisory_classes.InstalledWallet(WalletCategory.REFERENCE_WALLET,
+                    WalletType.REFERENCE,
+                    new ArrayList<InstalledSkin>(),
+                    new ArrayList<InstalledLanguage>(),
+                    "cash_wallet",
+                    "Cash Wallet",
+                    "cash_wallet",
+                    "wallet_cash_platform_identifier",
+                    new Version(1,0,0));
+            lstInstalledWallet.add(installedWallet);
+            item = new Item(installedWallet);
+            item.setIconResource(R.drawable.cash_wallet_xxhdpi);
+            item.setPosition(7);
+            lstItemsWithIcon.add(item);
 
             //subApps
 //            InstalledSubApp installedSubApp = new InstalledSubApp(SubApps.CWP_INTRA_USER_IDENTITY,null,null,"intra_user_identity_sub_app","Identity","public_key_ccp_intra_user_identity","intra_user_identity_sub_app",new Version(1,0,0));
@@ -484,6 +516,15 @@ public class DesktopFragment extends FermatFragment implements SearchView.OnClos
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+
+    @Override
+    public void onDestroy() {
+
+        adapter = null;
+        mItemTouchHelper = null;
+        super.onDestroy();
     }
 }
 

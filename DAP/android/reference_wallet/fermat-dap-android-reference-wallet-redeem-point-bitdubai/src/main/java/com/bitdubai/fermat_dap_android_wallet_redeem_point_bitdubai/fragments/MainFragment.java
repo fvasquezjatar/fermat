@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatWalletFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.ui.interfaces.FermatWorkerCallBack;
 import com.bitdubai.fermat_android_api.ui.util.FermatWorker;
 import com.bitdubai.fermat_dap_android_wallet_redeem_point_bitdubai.R;
@@ -33,7 +33,7 @@ import java.util.List;
  * @author Francisco Vásquez
  * @version 1.0
  */
-public class MainFragment extends FermatWalletFragment
+public class MainFragment extends AbstractFermatFragment
         implements PopupMenu.OnMenuItemClickListener {
 
     private AssetRedeemPointWalletSubAppModule manager;
@@ -58,11 +58,11 @@ public class MainFragment extends FermatWalletFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try {
-            manager = ((RedeemPointSession) walletSession).getRedeemManager();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+//        try {
+//            manager = ((RedeemPointSession) appSession).getRedeemManager();
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
     }
 
     @Override
@@ -72,8 +72,8 @@ public class MainFragment extends FermatWalletFragment
             @Override
             protected Object doInBackground() throws Exception {
                 if (manager == null)
-                    throw new NullPointerException("AssetUserWalletModuleManager is null");
-                assetRedeemPointWalletList = manager.getAssetRedeemPointWalletBalancesBook("walletPublicKeyTest");
+                    throw new NullPointerException("AssetRedeemPointWalletModuleManager is null");
+                assetRedeemPointWalletList = manager.getAssetRedeemPointWalletBalances("walletPublicKeyTest");
                 if (assetRedeemPointWalletList != null && !assetRedeemPointWalletList.isEmpty()) {
                     bookAssets = new ArrayList<>();
                     for (AssetRedeemPointWalletList assetRedeemPointWallet : assetRedeemPointWalletList) {
@@ -114,7 +114,7 @@ public class MainFragment extends FermatWalletFragment
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.main_fragment, container, false);
+        rootView = inflater.inflate(R.layout.dap_wallet_asset_redeempoint_main_fragment, container, false);
         assetsView = (RecyclerView) rootView.findViewById(R.id.assets);
         assetsView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
@@ -126,7 +126,7 @@ public class MainFragment extends FermatWalletFragment
                 setAsset(project);
                 PopupMenu popupMenu = new PopupMenu(getActivity(), menuView);
                 MenuInflater inflater = popupMenu.getMenuInflater();
-                inflater.inflate(R.menu.main, popupMenu.getMenu());
+                inflater.inflate(R.menu.dap_wallet_asset_redeempoint_main, popupMenu.getMenu());
                 popupMenu.setOnMenuItemClickListener(MainFragment.this);
                 popupMenu.show();
             }
@@ -137,7 +137,7 @@ public class MainFragment extends FermatWalletFragment
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
-        if (menuItem.getItemId() == R.id.action_appropriate) {
+        if (menuItem.getItemId() == R.id.action_new) {
             final ProgressDialog dialog = new ProgressDialog(getActivity());
             dialog.setMessage("Please wait...");
             dialog.setCancelable(false);
@@ -145,13 +145,7 @@ public class MainFragment extends FermatWalletFragment
             FermatWorker task = new FermatWorker() {
                 @Override
                 protected Object doInBackground() throws Exception {
-//                    manager.distributionAssets(
-//                            asset.getAssetPublicKey(),
-//                            asset.getWalletPublicKey(),
-//                            asset.getActorAssetUser()
-//                    );
                     //TODO implement work to do
-//                    manager.appropriateAsset();
                     return true;
                 }
             };

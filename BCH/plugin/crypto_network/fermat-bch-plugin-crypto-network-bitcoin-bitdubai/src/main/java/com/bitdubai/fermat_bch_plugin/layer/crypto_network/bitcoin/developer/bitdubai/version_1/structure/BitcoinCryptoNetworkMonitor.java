@@ -1,24 +1,20 @@
 package com.bitdubai.fermat_bch_plugin.layer.crypto_network.bitcoin.developer.bitdubai.version_1.structure;
 
 import com.bitdubai.fermat_api.layer.all_definition.transaction_transference_protocol.crypto_transactions.CryptoTransaction;
-import com.bitdubai.fermat_api.layer.dmp_world.Agent;
-import com.bitdubai.fermat_api.layer.dmp_world.wallet.exceptions.CantStartAgentException;
+import com.bitdubai.fermat_api.Agent;
+import com.bitdubai.fermat_api.CantStartAgentException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.PluginDatabaseSystem;
 import com.bitdubai.fermat_bch_api.layer.crypto_network.bitcoin.exceptions.CantBroadcastTransactionException;
 import com.bitdubai.fermat_bch_api.layer.crypto_network.bitcoin.exceptions.CantGetCryptoTransactionException;
 import com.bitdubai.fermat_bch_api.layer.crypto_network.bitcoin.interfaces.BitcoinNetworkConfiguration;
 import com.bitdubai.fermat_bch_plugin.layer.crypto_network.bitcoin.developer.bitdubai.version_1.exceptions.BlockchainException;
 
-import org.bitcoinj.core.AbstractPeerEventListener;
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.BlockChain;
-import org.bitcoinj.core.FilteredBlock;
 import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Peer;
 import org.bitcoinj.core.PeerAddress;
 import org.bitcoinj.core.PeerGroup;
 import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionBroadcast;
 import org.bitcoinj.core.Wallet;
@@ -27,7 +23,6 @@ import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.store.MemoryBlockStore;
-import org.bitcoinj.store.MemoryFullPrunedBlockStore;
 import org.bitcoinj.wallet.WalletTransaction;
 
 import java.io.File;
@@ -48,6 +43,7 @@ public class BitcoinCryptoNetworkMonitor implements Agent {
     PeerGroup peerGroup;
     File walletFileName;
     BlockChain blockChain;
+    BitcoinNetworkEvents events;
     final NetworkParameters NETWORK_PARAMETERS;
 
 
@@ -118,15 +114,8 @@ public class BitcoinCryptoNetworkMonitor implements Agent {
             /**
              * creates the blockchain object for the specified network.
              */
-//        BitcoinCryptoNetworkBlockChain CryptoNetworkBlockChain = new BitcoinCryptoNetworkBlockChain(NETWORK_PARAMETERS, wallet);
-//        BlockChain blockChain = CryptoNetworkBlockChain.getBlockChain();
-            BlockStore blockStore = new MemoryBlockStore(NETWORK_PARAMETERS);
-            try {
-                blockChain = new BlockChain(NETWORK_PARAMETERS, wallet, blockStore);
-            } catch (BlockStoreException e) {
-                e.printStackTrace();
-            }
-
+            BitcoinCryptoNetworkBlockChain CryptoNetworkBlockChain = new BitcoinCryptoNetworkBlockChain(NETWORK_PARAMETERS, wallet);
+            BlockChain blockChain = CryptoNetworkBlockChain.getBlockChain();
 
             /**
              * creates the peerGroup object
@@ -137,7 +126,7 @@ public class BitcoinCryptoNetworkMonitor implements Agent {
             /**
              * add the events
              */
-            BitcoinNetworkEvents events = new BitcoinNetworkEvents(pluginDatabaseSystem, plugId, this.walletFileName);
+            events = new BitcoinNetworkEvents(pluginDatabaseSystem, plugId, this.walletFileName);
             peerGroup.addEventListener(events);
             this.wallet.addEventListener(events);
             blockChain.addListener(events);
@@ -184,9 +173,10 @@ public class BitcoinCryptoNetworkMonitor implements Agent {
     /**
      * Broadcast a well formed, commited and signed transaction into the network
      * @param tx
+     * @param transactionId the internal fermat transaction Ifd
      * @throws CantBroadcastTransactionException
      */
-    public void broadcastTransaction(Transaction tx) throws CantBroadcastTransactionException {
+    public void broadcastTransaction(final Transaction tx, final UUID transactionId) throws CantBroadcastTransactionException {
         try{
             /**
              * I will add this transaction to the wallet.
@@ -194,15 +184,18 @@ public class BitcoinCryptoNetworkMonitor implements Agent {
             WalletTransaction walletTransaction = new WalletTransaction(WalletTransaction.Pool.PENDING, tx);
             wallet.addWalletTransaction(walletTransaction);
 
+
             /**
              * save the added transaction in the wallet
              */
             wallet.saveToFile(walletFileName);
 
+
+
             /**
              * Broadcast it.
              */
-            TransactionBroadcast broadcast = peerGroup.broadcastTransaction(tx);
+            final TransactionBroadcast broadcast = peerGroup.broadcastTransaction(tx);
             broadcast.setProgressCallback(new TransactionBroadcast.ProgressCallback() {
                 @Override
                 public void onBroadcastProgress(double progress) {
@@ -210,18 +203,33 @@ public class BitcoinCryptoNetworkMonitor implements Agent {
                 }
             });
 
-            broadcast.broadcast().get(2, TimeUnit.MINUTES);
-            broadcast.future().get(2, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
+            broadcast.broadcast().get(BitcoinNetworkConfiguration.TRANSACTION_BROADCAST_TIMEOUT, TimeUnit.MINUTES);
+            broadcast.future().get(BitcoinNetworkConfiguration.TRANSACTION_BROADCAST_TIMEOUT, TimeUnit.MINUTES);
+
+            /**
+             * Store this outgoing transaction in the table
+             */
+            storeOutgoingTransaction(wallet, tx, transactionId);
+
+            /**
+             * saves the wallet again.
+             */
+            wallet.saveToFile(walletFileName);
         } catch (Exception exception){
+            exception.printStackTrace();
             throw new CantBroadcastTransactionException(CantBroadcastTransactionException.DEFAULT_MESSAGE, exception, "There was an unexpected issue while broadcasting a transaction.", null);
         }
 
+    }
+
+    /**
+     * Stores and outgoing transaction into the database
+     * @param wallet
+     * @param tx
+     * @param transactionId
+     */
+    private void storeOutgoingTransaction(Wallet wallet, Transaction tx, UUID transactionId) {
+        events.saveOutgoingTransaction(wallet, tx, transactionId);
     }
 
     /**

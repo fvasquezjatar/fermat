@@ -12,7 +12,7 @@ import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.Cant
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantOpenDatabaseException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.DatabaseNotFoundException;
 import com.bitdubai.fermat_cbp_api.all_definition.exceptions.CantInitializeDatabaseException;
-import com.bitdubai.fermat_cbp_api.layer.network_service.TransactionTransmission.exceptions.PendingRequestNotFoundException;
+import com.bitdubai.fermat_cbp_api.layer.network_service.transaction_transmission.exceptions.PendingRequestNotFoundException;
 import com.bitdubai.fermat_cbp_plugin.layer.network_service.transaction_transmission.developer.bitdubai.version_1.exceptions.CantGetTransactionTransmissionException;
 import com.bitdubai.fermat_cbp_plugin.layer.network_service.transaction_transmission.developer.bitdubai.version_1.exceptions.CantUpdateRecordDataBaseException;
 import com.bitdubai.fermat_cbp_plugin.layer.network_service.transaction_transmission.developer.bitdubai.version_1.structure.TransactionTransmissionConnectionRecord;
@@ -88,6 +88,9 @@ public class TransactionTransmissionConnectionsDAO {
         } catch (CantInsertRecordException e) {
 
             throw new CantUpdateRecordDataBaseException("", e, "Exception not handled by the plugin, there is a problem in database and i cannot insert the record.","");
+        }catch (Exception e) {
+
+            throw new CantUpdateRecordDataBaseException(CantInitializeDatabaseException.DEFAULT_MESSAGE, e, "", "Generic Exception.");
         }
     }
 
@@ -102,7 +105,7 @@ public class TransactionTransmissionConnectionsDAO {
 
             DatabaseTable metadataTable = database.getTable(CommunicationNetworkServiceDatabaseConstants.COMPONENT_VERSIONS_DETAILS_TABLE_NAME);
 
-            metadataTable.setUUIDFilter(CommunicationNetworkServiceDatabaseConstants.COMPONENT_VERSIONS_DETAILS_ID_COLUMN_NAME, transmissionId, DatabaseFilterType.EQUAL);
+            metadataTable.addUUIDFilter(CommunicationNetworkServiceDatabaseConstants.COMPONENT_VERSIONS_DETAILS_ID_COLUMN_NAME, transmissionId, DatabaseFilterType.EQUAL);
 
             metadataTable.loadToMemory();
 
@@ -121,6 +124,9 @@ public class TransactionTransmissionConnectionsDAO {
         } catch (InvalidParameterException exception) {
 
             throw new CantGetTransactionTransmissionException("",exception , "Check the cause." ,""                                                                              );
+        }catch (Exception e) {
+
+            throw new CantGetTransactionTransmissionException(CantGetTransactionTransmissionException.DEFAULT_MESSAGE, e, "", "Generic Exception.");
         }
     }
 

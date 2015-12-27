@@ -1,10 +1,10 @@
 package com.bitdubai.sub_app.intra_user_community.fragments;
 
 
-import android.app.ActionBar;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.drawable.LayerDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -24,7 +24,7 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.ui.interfaces.FermatListItemListeners;
 import com.bitdubai.fermat_android_api.ui.interfaces.FermatWorkerCallBack;
 import com.bitdubai.fermat_android_api.ui.util.FermatWorker;
@@ -33,19 +33,15 @@ import com.bitdubai.fermat_api.layer.all_definition.enums.UISource;
 import com.bitdubai.fermat_api.layer.all_definition.navigation_structure.enums.Activities;
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.exceptions.CantGetActiveLoginIdentityException;
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.exceptions.CantGetIntraUsersListException;
-import com.bitdubai.fermat_ccp_api.layer.module.intra_user.exceptions.CantLoginIntraUserException;
-import com.bitdubai.fermat_ccp_api.layer.module.intra_user.exceptions.CantShowLoginIdentitiesException;
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserInformation;
-import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserLoginIdentity;
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserModuleManager;
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserSearch;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
 import com.bitdubai.sub_app.intra_user_community.R;
 import com.bitdubai.sub_app.intra_user_community.adapters.AppListAdapter;
-import com.bitdubai.sub_app.intra_user_community.common.Views.Utils;
-import com.bitdubai.sub_app.intra_user_community.common.navigation_drawer.NavigationViewAdapter;
-import com.bitdubai.sub_app.intra_user_community.common.popups.ConnectDialog;
+import com.bitdubai.sub_app.intra_user_community.adapters.AppNavigationAdapter;
+import com.bitdubai.sub_app.intra_user_community.common.popups.PresentationIntraUserCommunityDialog;
 import com.bitdubai.sub_app.intra_user_community.common.utils.FragmentsCommons;
 import com.bitdubai.sub_app.intra_user_community.session.IntraUserSubAppSession;
 import com.bitdubai.sub_app.intra_user_community.util.CommonLogger;
@@ -58,15 +54,17 @@ import static android.widget.Toast.makeText;
 
 /**
  * Created by Matias Furszyfer on 15/09/15.
+ * modified by Jose Manuel De Sousa Dos Santos on 08/12/2015
  */
 
 
-public class ConnectionsWorldFragment extends FermatFragment implements SearchView.OnCloseListener,
+public class ConnectionsWorldFragment extends AbstractFermatFragment implements SearchView.OnCloseListener,
         SearchView.OnQueryTextListener,
-        ActionBar.OnNavigationListener,
         AdapterView.OnItemClickListener,
         SwipeRefreshLayout.OnRefreshListener, FermatListItemListeners<IntraUserInformation> {
 
+
+    public static final String INTRA_USER_SELECTED = "intra_user";
 
     private static final int MAX = 20;
     /**
@@ -74,14 +72,16 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
      */
     private static IntraUserModuleManager moduleManager;
     private static ErrorManager errorManager;
+
     protected final String TAG = "Recycler Base";
     private int offset = 0;
+
 
     private int mNotificationsCount = 0;
     private SearchView mSearchView;
 
     private AppListAdapter adapter;
-    private boolean isStartList;
+    private boolean isStartList = false;
 
 
     private ProgressDialog mDialog;
@@ -97,10 +97,10 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
     private boolean isRefreshing = false;
     private View rootView;
     private IntraUserSubAppSession intraUserSubAppSession;
-
     private String searchName;
     private LinearLayout emptyView;
     private ArrayList<IntraUserInformation> lstIntraUserInformations;
+    private List<IntraUserInformation> dataSet = new ArrayList<>();
 
     /**
      * Create a new instance of this fragment
@@ -116,11 +116,12 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
         super.onCreate(savedInstanceState);
         try {
 
-            setHasOptionsMenu(true);
+            // setHasOptionsMenu(true);
             // setting up  module
-            intraUserSubAppSession = ((IntraUserSubAppSession) subAppsSession);
-            moduleManager = intraUserSubAppSession.getIntraUserModuleManager();
-            errorManager = subAppsSession.getErrorManager();
+
+            intraUserSubAppSession = ((IntraUserSubAppSession) appSession);
+            moduleManager = intraUserSubAppSession.getModuleManager();
+            errorManager = appSession.getErrorManager();
 
             mNotificationsCount = moduleManager.getIntraUsersWaitingYourAcceptanceCount();
 
@@ -137,6 +138,7 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
         }
     }
 
+
     /**
      * Fragment Class implementation.
      */
@@ -145,8 +147,7 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         try {
-
-            rootView = inflater.inflate(R.layout.world_main, container, false);
+            rootView = inflater.inflate(R.layout.fragment_connections_world, container, false);
             setUpScreen(inflater);
             recyclerView = (RecyclerView) rootView.findViewById(R.id.gridView);
             recyclerView.setHasFixedSize(true);
@@ -162,16 +163,37 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
 
             rootView.setBackgroundColor(Color.parseColor("#000b12"));
             emptyView = (LinearLayout) rootView.findViewById(R.id.empty_view);
-
+            dataSet.addAll(moduleManager.getCacheSuggestionsToContact(MAX, offset));
+            swipeRefresh.setRefreshing(true);
             onRefresh();
+            /**
+             * Code to show cache data
+             */
+            /*adapter.changeDataSet(dataSet);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    onRefresh();
+                }
+            }, 1500);*/
+            SharedPreferences pref = getActivity().getSharedPreferences("dont show dialog more", Context.MODE_PRIVATE);
+            if (!pref.getBoolean("isChecked", false)) {
+                if (moduleManager.getActiveIntraUserIdentity() != null) {
+                    if (!moduleManager.getActiveIntraUserIdentity().getPublicKey().isEmpty()) {
+                        PresentationIntraUserCommunityDialog presentationIntraUserCommunityDialog = new PresentationIntraUserCommunityDialog(getActivity(), intraUserSubAppSession, null, PresentationIntraUserCommunityDialog.TYPE_PRESENTATION_WITHOUT_IDENTITIES);
+                        presentationIntraUserCommunityDialog.show();
+                    }
+                } else {
+                    PresentationIntraUserCommunityDialog presentationIntraUserCommunityDialog = new PresentationIntraUserCommunityDialog(getActivity(), intraUserSubAppSession, null, PresentationIntraUserCommunityDialog.TYPE_PRESENTATION);
+                    presentationIntraUserCommunityDialog.show();
+                }
+            }
 
         } catch (Exception ex) {
             errorManager.reportUnexpectedUIException(UISource.ACTIVITY, UnexpectedUIExceptionSeverity.CRASH, FermatException.wrapException(ex));
             Toast.makeText(getActivity().getApplicationContext(), "Oooops! recovering from system error", Toast.LENGTH_SHORT).show();
-
         }
-
-
         return rootView;
     }
 
@@ -191,23 +213,15 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
     }
 
     private void setUpScreen(LayoutInflater layoutInflater) throws CantGetActiveLoginIdentityException {
-        /**
-         * add navigation header
-         */
-        addNavigationHeader(FragmentsCommons.setUpHeaderScreen(layoutInflater, getActivity(), intraUserSubAppSession.getIntraUserModuleManager().getActiveIntraUserIdentity()));
 
-        /**
-         * Navigation view items
-         */
-        NavigationViewAdapter navigationViewAdapter = new NavigationViewAdapter(getActivity(), null);
-        setNavigationDrawer(navigationViewAdapter);
-//        setNavigationBackgroundColor(getResources().getColor(R.color.nav_drawer_color));
     }
 
     @Override
     public void onRefresh() {
         if (!isRefreshing) {
             isRefreshing = true;
+            if (swipeRefresh != null)
+                swipeRefresh.setRefreshing(true);
             FermatWorker worker = new FermatWorker() {
                 @Override
                 protected Object doInBackground() throws Exception {
@@ -256,10 +270,10 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
 
         super.onCreateOptionsMenu(menu, inflater);
 
-        inflater.inflate(R.menu.intra_user_menu, menu);
+       /* inflater.inflate(R.menu.intra_user_menu, menu);
 
         //MenuItem menuItem = new SearchView(getActivity());
-        /*try {
+        *//*try {
             MenuItem searchItem = menu.findItem(R.id.action_search);
             searchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW | MenuItem.SHOW_AS_ACTION_ALWAYS);
             //MenuItemCompat.setShowAsAction(searchItem, MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW | MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -271,7 +285,7 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
 
         }catch (Exception e){
 
-        }*/
+        }*//*
 //        MenuItem menuItem = menu.add(0, IntraUserCommunityConstants.IC_ACTION_SEARCH, 0, "send");
 //        menuItem.setIcon(R.drawable.ic_action_search).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 //        menuItem.setActionProvider(new SearchView(getActivity()))
@@ -297,7 +311,7 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
 //
 //        spinner.setAdapter(itemsAdapter); // set the adapter to provide layout of rows and content
 //        //s.setOnItemSelectedListener(onItemSelectedListener); // set the listener, to perform actions based on item selection
-
+*/
     }
 
     @Override
@@ -310,14 +324,14 @@ public class ConnectionsWorldFragment extends FermatFragment implements SearchVi
 
             // Esto podria ser un enum de item menu que correspondan a otro menu
             if (itemTitle.equals("New Identity")) {
-                changeActivity(Activities.CWP_INTRA_USER_CREATE_ACTIVITY.getCode(), subAppsSession.getAppPublicKey());
+                changeActivity(Activities.CWP_INTRA_USER_CREATE_ACTIVITY.getCode(), appSession.getAppPublicKey());
 
             }
 //            if(id == R.id.action_connection_request){
 //                Toast.makeText(getActivity(),"Intra user request",Toast.LENGTH_SHORT).show();
 //            }
             if (item.getItemId() == R.id.action_notifications) {
-                changeActivity(Activities.CCP_SUB_APP_INTRA_USER_COMMUNITY_REQUEST.getCode(), subAppsSession.getAppPublicKey());
+                changeActivity(Activities.CCP_SUB_APP_INTRA_USER_COMMUNITY_REQUEST.getCode(), appSession.getAppPublicKey());
                 return true;
             }
 
@@ -391,32 +405,10 @@ Updates the count of notifications in the ActionBar.
         return true;
     }
 
-    @Override
-    public boolean onNavigationItemSelected(int position, long idItem) {
-        try {
-            IntraUserLoginIdentity intraUserLoginIdentity = moduleManager.showAvailableLoginIdentities().get(position);
-            moduleManager.login(intraUserLoginIdentity.getPublicKey());
-            //TODO: para despues
-            //adapter.changeDataSet(intraUserModuleManager.getAllIntraUsers());
-
-            //mientras tanto testeo
-            //adapter.changeDataSet(IntraUserConnectionListItem.getTestData(getResources()));
-
-            return true;
-        } catch (CantShowLoginIdentitiesException e) {
-            e.printStackTrace();
-        } catch (CantLoginIntraUserException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
 
     private synchronized List<IntraUserInformation> getMoreData() {
         List<IntraUserInformation> dataSet = new ArrayList<>();
-
         try {
-
             dataSet.addAll(moduleManager.getSuggestionsToContact(MAX, offset));
             offset = dataSet.size();
 
@@ -425,19 +417,23 @@ Updates the count of notifications in the ActionBar.
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return dataSet;
     }
 
     @Override
     public void onItemClickListener(IntraUserInformation data, int position) {
-        ConnectDialog connectDialog = null;
+
+        appSession.setData(INTRA_USER_SELECTED, data);
+        changeActivity(Activities.CCP_SUB_APP_INTRA_USER_COMMUNITY_CONNECTION_OTHER_PROFILE.getCode(), appSession.getAppPublicKey());
+
+
+        /*ConnectDialog connectDialog = null;
         try {
-            connectDialog = new ConnectDialog(getActivity(), (IntraUserSubAppSession) subAppsSession, subAppResourcesProviderManager, data, moduleManager.getActiveIntraUserIdentity());
+            connectDialog = new ConnectDialog(getActivity(), (IntraUserSubAppSession) appSession, appResourcesProviderManager, data, moduleManager.getActiveIntraUserIdentity());
             connectDialog.show();
         } catch (CantGetActiveLoginIdentityException e) {
             e.printStackTrace();
-        }
+        }*/
 
     }
 

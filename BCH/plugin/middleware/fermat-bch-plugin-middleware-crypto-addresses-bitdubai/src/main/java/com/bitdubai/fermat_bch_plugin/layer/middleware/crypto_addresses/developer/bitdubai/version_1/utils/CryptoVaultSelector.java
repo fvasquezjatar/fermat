@@ -1,5 +1,6 @@
 package com.bitdubai.fermat_bch_plugin.layer.middleware.crypto_addresses.developer.bitdubai.version_1.utils;
 
+import com.bitdubai.fermat_api.layer.all_definition.enums.CryptoAssetVault;
 import com.bitdubai.fermat_api.layer.all_definition.enums.CryptoCurrency;
 import com.bitdubai.fermat_api.layer.all_definition.enums.CryptoCurrencyVault;
 import com.bitdubai.fermat_api.layer.all_definition.enums.VaultType;
@@ -8,7 +9,7 @@ import com.bitdubai.fermat_api.layer.all_definition.exceptions.InvalidParameterE
 import com.bitdubai.fermat_bch_api.layer.crypto_vault.asset_vault.interfaces.AssetVaultManager;
 import com.bitdubai.fermat_bch_api.layer.crypto_vault.interfaces.PlatformCryptoVault;
 import com.bitdubai.fermat_bch_plugin.layer.middleware.crypto_addresses.developer.bitdubai.version_1.exceptions.CantIdentifyVaultException;
-import com.bitdubai.fermat_cry_api.layer.crypto_vault.CryptoVaultManager;
+import com.bitdubai.fermat_bch_api.layer.crypto_vault.bitcoin_vault.CryptoVaultManager;
 
 /**
  * The class <code>com.bitdubai.fermat_bch_plugin.layer.middleware.crypto_addresses.developer.bitdubai.version_1.structure.CryptoVaultSelector</code>
@@ -21,23 +22,23 @@ import com.bitdubai.fermat_cry_api.layer.crypto_vault.CryptoVaultManager;
  */
 public final class CryptoVaultSelector {
 
-    private  PlatformCryptoVault platformCryptoVault;
     private CryptoVaultManager cryptoVaultManager;
     private AssetVaultManager assetVaultManager;
 
 
-    public CryptoVaultSelector(CryptoVaultManager cryptoVaultManager, AssetVaultManager assetVaultManager) {
+    public CryptoVaultSelector(final CryptoVaultManager cryptoVaultManager,
+                               final AssetVaultManager  assetVaultManager ) {
         this.cryptoVaultManager = cryptoVaultManager;
         this.assetVaultManager = assetVaultManager;
     }
 
     public final PlatformCryptoVault getVault(final VaultType      vaultType     ,
-                                             final CryptoCurrency cryptoCurrency) throws CantIdentifyVaultException {
+                                              final CryptoCurrency cryptoCurrency) throws CantIdentifyVaultException {
 
         try {
             switch (vaultType) {
 
-                case ASSET_VAULT          : return getAssetVault(cryptoCurrency);
+                case CRYPTO_ASSET_VAULT:    return getAssetVault(cryptoCurrency);
                 case CRYPTO_CURRENCY_VAULT: return getCryptoCurrencyVault(cryptoCurrency);
 
                 default:
@@ -65,9 +66,9 @@ public final class CryptoVaultSelector {
 
     public final PlatformCryptoVault getAssetVault(final CryptoCurrency cryptoCurrency) throws InvalidParameterException {
 
-        switch (CryptoCurrencyVault.getByCryptoCurrency(cryptoCurrency)) {
+        switch (CryptoAssetVault.getByCryptoCurrency(cryptoCurrency)) {
 
-            case ASSET_VAULT: return assetVaultManager;
+            case BITCOIN_ASSET_VAULT: return assetVaultManager;
 
             default:
                 throw new InvalidParameterException(
@@ -81,8 +82,10 @@ public final class CryptoVaultSelector {
 
         switch (vaultType) {
 
-            case CRYPTO_CURRENCY_VAULT: return CryptoCurrencyVault.getByCryptoCurrency(cryptoCurrency);
-            case ASSET_VAULT:           return CryptoCurrencyVault.getByCryptoCurrency(cryptoCurrency);
+            case CRYPTO_CURRENCY_VAULT:
+                return CryptoCurrencyVault.getByCryptoCurrency(cryptoCurrency);
+            case CRYPTO_ASSET_VAULT:
+                return CryptoAssetVault.getByCryptoCurrency(cryptoCurrency);
 
             default: throw new InvalidParameterException("VaultType: "+vaultType.toString()+ " - CryptoCurrency: "+ cryptoCurrency, "Vault not recognized.");
         }

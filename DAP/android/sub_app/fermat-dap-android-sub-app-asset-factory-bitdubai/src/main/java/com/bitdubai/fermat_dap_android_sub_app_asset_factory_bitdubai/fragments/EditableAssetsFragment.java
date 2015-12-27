@@ -20,13 +20,15 @@ import android.view.Window;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.ui.inflater.ViewInflater;
 import com.bitdubai.fermat_android_api.ui.interfaces.FermatWorkerCallBack;
 import com.bitdubai.fermat_android_api.ui.util.FermatWorker;
 import com.bitdubai.fermat_api.layer.all_definition.enums.BlockchainNetworkType;
 import com.bitdubai.fermat_api.layer.all_definition.navigation_structure.enums.Activities;
+import com.bitdubai.fermat_api.layer.all_definition.resources_structure.Resource;
 import com.bitdubai.fermat_api.layer.osa_android.file_system.exceptions.CantCreateFileException;
+import com.bitdubai.fermat_api.layer.osa_android.file_system.exceptions.FileNotFoundException;
 import com.bitdubai.fermat_dap_android_sub_app_asset_factory_bitdubai.R;
 import com.bitdubai.fermat_dap_android_sub_app_asset_factory_bitdubai.adapters.AssetFactoryAdapter;
 import com.bitdubai.fermat_dap_android_sub_app_asset_factory_bitdubai.interfaces.PopupMenu;
@@ -49,7 +51,7 @@ import java.util.List;
  * @author Francisco Vásquez
  * @version 1.0
  */
-public class EditableAssetsFragment extends FermatFragment implements
+public class EditableAssetsFragment extends AbstractFermatFragment implements
         FermatWorkerCallBack, SwipeRefreshLayout.OnRefreshListener, android.widget.PopupMenu.OnMenuItemClickListener {
 
     /**
@@ -83,8 +85,8 @@ public class EditableAssetsFragment extends FermatFragment implements
         super.onCreate(savedInstanceState);
         try {
             selectedAsset = null;
-            manager = ((AssetFactorySession) subAppsSession).getManager();
-            //viewInflater = new ViewInflater(getActivity(), subAppResourcesProviderManager);
+            manager = ((AssetFactorySession) appSession).getModuleManager();
+            //viewInflater = new ViewInflater(getActivity(), appResourcesProviderManager);
         } catch (Exception ex) {
             CommonLogger.exception(TAG, ex.getMessage(), ex);
         }
@@ -193,7 +195,7 @@ public class EditableAssetsFragment extends FermatFragment implements
             public void onClick(View view) {
                 /* create new asset factory project */
                 selectedAsset = null;
-                changeActivity(Activities.DAP_ASSET_EDITOR_ACTIVITY.getCode(), subAppsSession.getAppPublicKey(), getAssetForEdit());
+                changeActivity(Activities.DAP_ASSET_EDITOR_ACTIVITY.getCode(), appSession.getAppPublicKey(), getAssetForEdit());
             }
         });
         create.setAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fab_jump_from_down));
@@ -230,7 +232,7 @@ public class EditableAssetsFragment extends FermatFragment implements
         }
     }
 
-    public List<AssetFactory> getMoreDataAsync() throws CantGetAssetFactoryException, CantCreateFileException {
+    public List<AssetFactory> getMoreDataAsync() throws CantGetAssetFactoryException, CantCreateFileException, FileNotFoundException {
         List<AssetFactory> items = new ArrayList<>();
         List<AssetFactory> draftItems = manager.getAssetFactoryByState(State.DRAFT);
         List<AssetFactory> pendingFinalItems = manager.getAssetFactoryByState(State.PENDING_FINAL);
@@ -238,6 +240,13 @@ public class EditableAssetsFragment extends FermatFragment implements
             items.addAll(draftItems);
         if (pendingFinalItems != null && !pendingFinalItems.isEmpty())
             items.addAll(pendingFinalItems);
+        List<Resource> resources;
+        for(AssetFactory item : items) {
+            resources = item.getResources();
+            for(Resource resource : resources) {
+                resource.setResourceBinayData(manager.getAssetFactoryResource(resource).getContent());
+            }
+        }
         return items;
     }
 
@@ -261,7 +270,7 @@ public class EditableAssetsFragment extends FermatFragment implements
     public boolean onMenuItemClick(MenuItem menuItem) {
         if (menuItem.getItemId() == R.id.action_edit) {
             if (getAssetForEdit() != null && getAssetForEdit().getState() == State.DRAFT)
-                changeActivity(Activities.DAP_ASSET_EDITOR_ACTIVITY.getCode(), getAssetForEdit());
+                changeActivity(Activities.DAP_ASSET_EDITOR_ACTIVITY.getCode(), appSession.getAppPublicKey(), getAssetForEdit());
             else
                 selectedAsset = null;
         } else if (menuItem.getItemId() == R.id.action_publish) {

@@ -1,12 +1,12 @@
 package com.bitdubai.fermat_csh_api.layer.csh_wallet.interfaces;
 
-import com.bitdubai.fermat_csh_api.all_definition.enums.BalanceType;
-import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantGetBalanceException;
+import com.bitdubai.fermat_csh_api.all_definition.exceptions.CashMoneyWalletInsufficientFundsException;
 import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantGetCashMoneyWalletBalanceException;
 import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantRegisterCreditException;
 import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantRegisterDebitException;
-import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantRegisterHoldException;
-import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantRegisterUnholdException;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 /**
  * Created by Yordin Alayn on 30.09.15.
@@ -15,34 +15,26 @@ import com.bitdubai.fermat_csh_api.layer.csh_wallet.exceptions.CantRegisterUnhol
 
 public interface CashMoneyWalletBalance {
 
-    /**
-     * Allows the balance to be changed, so that the other methods of this class
-     * affect that balance.
-     */
-    public void changeBalanceTo(BalanceType balanceType);
-
 
     /**
      * Returns the Balance this CashMoneyWalletBalance belongs to. (Can be available or book)
      *
-     * @return A double, containing the balance.
+     * @return A BigDecimal, containing the balance.
      */
-    double getBalance ()throws CantGetCashMoneyWalletBalanceException;
+    BigDecimal getBalance() throws CantGetCashMoneyWalletBalanceException;
 
     /**
      * Registers a debit on the Balance of this CashMoneyWalletBalance. (Can be available or book)
      *
-     * @param cashMoneyWalletTransaction Contains the details of the debit transaction
      */
 
-    void debit(CashMoneyWalletTransaction cashMoneyWalletTransaction) throws CantRegisterDebitException;
+    void debit(UUID transactionId, String publicKeyActor, String publicKeyPlugin, BigDecimal amount, String memo) throws CantRegisterDebitException, CashMoneyWalletInsufficientFundsException;
 
     /**
      * Registers a credit on the Balance of his CashMoneyWalletBalance. (Can be available or book)
      *
-     * @param cashMoneyWalletTransaction Contains the details of the credit transaction
      */
-    void credit(CashMoneyWalletTransaction cashMoneyWalletTransaction) throws CantRegisterCreditException;
+    void credit(UUID transactionId, String publicKeyActor, String publicKeyPlugin, BigDecimal amount, String memo) throws CantRegisterCreditException;
 
 
 

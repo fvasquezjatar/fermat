@@ -30,8 +30,8 @@ import com.bitdubai.fermat_api.layer.all_definition.resources_structure.enums.Sc
 import com.bitdubai.fermat_api.layer.all_definition.util.Version;
 import com.bitdubai.fermat_api.layer.dmp_identity.designer.interfaces.DesignerIdentity;
 import com.bitdubai.fermat_api.layer.dmp_identity.translator.interfaces.TranslatorIdentity;
-import com.bitdubai.fermat_api.layer.dmp_middleware.wallet_language.exceptions.CantGetWalletLanguageException;
-import com.bitdubai.fermat_api.layer.dmp_world.wallet.exceptions.CantStartAgentException;
+import com.bitdubai.fermat_wpd_api.all_definition.exceptions.CantGetWalletLanguageException;
+import com.bitdubai.fermat_api.CantStartAgentException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.Database;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.PluginDatabaseSystem;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantCreateDatabaseException;
@@ -47,8 +47,8 @@ import com.bitdubai.fermat_api.layer.osa_android.logger_system.LogManager;
 import com.bitdubai.fermat_api.layer.pip_Identity.developer.exceptions.CantSingMessageException;
 import com.bitdubai.fermat_api.layer.pip_Identity.developer.interfaces.DeveloperIdentity;
 import com.bitdubai.fermat_p2p_api.layer.p2p_communication.CommunicationLayerManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedPluginExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedPluginExceptionSeverity;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.interfaces.EventManager;
 import com.bitdubai.fermat_wpd_api.layer.wpd_network_service.wallet_store.exceptions.CantGetCatalogItemException;
 import com.bitdubai.fermat_wpd_api.layer.wpd_network_service.wallet_store.exceptions.CantGetDesignerException;
@@ -473,6 +473,36 @@ public class WalletStoreNetworkServicePluginRoot extends AbstractPlugin implemen
     @Override
     public boolean isRegister() {
         return false;
+    }
+
+    @Override
+    public void setPlatformComponentProfilePluginRoot(PlatformComponentProfile platformComponentProfile) {
+
+    }
+
+    @Override
+    public void initializeCommunicationNetworkServiceConnectionManager() {
+
+    }
+
+    @Override
+    public String getIdentityPublicKey() {
+        return null;
+    }
+
+    @Override
+    public String getAlias() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public String getExtraData() {
+        return null;
     }
 
     /**

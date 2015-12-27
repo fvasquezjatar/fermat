@@ -1,16 +1,12 @@
 package com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.interfaces;
 
-import com.bitdubai.fermat_cbp_api.all_definition.enums.NegotiationStatus;
-import com.bitdubai.fermat_cbp_api.all_definition.negotiation.Clause;
-import com.bitdubai.fermat_cbp_api.all_definition.negotiation.CustomerBrokerNegotiation;
-import com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.exceptions.CantCreateCustomerBrokerNewNegotiationTransactionException;
-import com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.exceptions.CantUpdateStatusCustomerBrokerNewNegotiationTransactionException;
+import com.bitdubai.fermat_cbp_api.layer.negotiation.customer_broker_purchase.interfaces.CustomerBrokerPurchaseNegotiation;
+import com.bitdubai.fermat_cbp_api.layer.negotiation.customer_broker_sale.interfaces.CustomerBrokerSaleNegotiation;
+import com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.exceptions.CantCreateCustomerBrokerNewPurchaseNegotiationTransactionException;
+import com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.exceptions.CantCreateCustomerBrokerNewSaleNegotiationTransactionException;
 import com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.exceptions.CantGetCustomerBrokerNewNegotiationTransactionException;
 import com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.exceptions.CantGetListCustomerBrokerNewNegotiationTransactionException;
-import com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.exceptions.CantSendCustomerBrokerNewNegotiationTransactionException;
-import com.bitdubai.fermat_cbp_api.layer.negotiation_transaction.customer_broker_new.exceptions.CantReceiveCustomerBrokerNewNegotiationTransactionException;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,16 +15,16 @@ import java.util.UUID;
  */
 public interface CustomerBrokerNewManager {
 
-    CustomerBrokerNew createCustomerBrokerNewNegotiationTranasction(String publicKeyBroker, String publicKeyCustomer, Collection<Clause> clauses) throws CantCreateCustomerBrokerNewNegotiationTransactionException;
+    //CREATE THE NEW PURCHASE NEGOTIATION TRANSACTION
+    void createCustomerBrokerNewPurchaseNegotiationTranasction(CustomerBrokerPurchaseNegotiation customerBrokerPurchaseNegotiation) throws CantCreateCustomerBrokerNewPurchaseNegotiationTransactionException;
 
-    void updateStatusCustomerBrokerNewNegotiationTranasction(UUID transactionId, NegotiationStatus statusTransaction) throws CantUpdateStatusCustomerBrokerNewNegotiationTransactionException;
+    //CREATE THE NEW SALE NEGOTIATION TRANSACTION
+    void createCustomerBrokerNewSaleNegotiationTranasction(CustomerBrokerSaleNegotiation customerBrokerSaleNegotiation) throws CantCreateCustomerBrokerNewSaleNegotiationTransactionException;
 
+    //GET THE NEW NEGOTIATION TRANSACTION FOR THE INDICATE ID
     CustomerBrokerNew getCustomerBrokerNewNegotiationTranasction(UUID transactionId) throws CantGetCustomerBrokerNewNegotiationTransactionException;
 
+    //LIST THE NEW NEGOTIATION TRANSACTION
     List<CustomerBrokerNew> getAllCustomerBrokerNewNegotiationTranasction() throws CantGetListCustomerBrokerNewNegotiationTransactionException;
-
-    void sendCustomerBrokerNewNegotiationTranasction(CustomerBrokerNegotiation negotiation) throws CantSendCustomerBrokerNewNegotiationTransactionException;
-
-    void receiveCustomerBrokerNewNegotiationTranasction(CustomerBrokerNegotiation negotiation) throws CantReceiveCustomerBrokerNewNegotiationTransactionException;
 
 }

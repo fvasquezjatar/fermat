@@ -2,10 +2,9 @@ package com.bitdubai.fermat_android_api.layer.definition.wallet.abstracts;
 
 import com.bitdubai.fermat_android_api.layer.definition.wallet.interfaces.FermatSession;
 import com.bitdubai.fermat_api.layer.all_definition.runtime.FermatApp;
-import com.bitdubai.fermat_api.layer.dmp_engine.sub_app_runtime.enums.SubApps;
-import com.bitdubai.fermat_api.layer.modules.ModuleManager;
+import com.bitdubai.fermat_api.layer.modules.interfaces.ModuleManager;
 import com.bitdubai.fermat_api.layer.pip_engine.interfaces.ResourceProviderManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +34,10 @@ public abstract class AbstractFermatSession<A extends FermatApp,M extends Module
         this.moduleManager = moduleManager;
         this.errorManager = errorManager;
         this.resourceProviderManager = resourceProviderManager;
+        this.data = new HashMap<>();
+    }
+
+    protected AbstractFermatSession() {
         this.data = new HashMap<>();
     }
 
@@ -90,4 +93,27 @@ public abstract class AbstractFermatSession<A extends FermatApp,M extends Module
     }
 
 
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public void setFermatApp(A fermatApp) {
+        this.fermatApp = fermatApp;
+    }
+
+    public void setModuleManager(M moduleManager) {
+        this.moduleManager = moduleManager;
+    }
+
+    public void setResourceProviderManager(R resourceProviderManager) {
+        this.resourceProviderManager = resourceProviderManager;
+    }
+
+    public void setErrorManager(ErrorManager errorManager) {
+        this.errorManager = errorManager;
+    }
+
+    public void removeData(String string){
+        data.remove(string);
+    }
 }

@@ -23,7 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.ui.interfaces.FermatListItemListeners;
 import com.bitdubai.fermat_android_api.ui.interfaces.FermatWorkerCallBack;
 import com.bitdubai.fermat_android_api.ui.util.FermatWorker;
@@ -38,12 +38,13 @@ import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserI
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserLoginIdentity;
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserModuleManager;
 import com.bitdubai.fermat_ccp_api.layer.module.intra_user.interfaces.IntraUserSearch;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.network_service.subapp_resources.SubAppResourcesProviderManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
 import com.bitdubai.sub_app.intra_user_community.R;
 import com.bitdubai.sub_app.intra_user_community.adapters.AppListAdapter;
-import com.bitdubai.sub_app.intra_user_community.common.Views.Utils;
-import com.bitdubai.sub_app.intra_user_community.common.navigation_drawer.NavigationViewAdapter;
+import com.bitdubai.sub_app.intra_user_community.adapters.AppNavigationAdapter;
+import com.bitdubai.sub_app.intra_user_community.common.views.Utils;
 import com.bitdubai.sub_app.intra_user_community.common.popups.ConnectDialog;
 import com.bitdubai.sub_app.intra_user_community.common.utils.FernatAnimationUtils;
 import com.bitdubai.sub_app.intra_user_community.common.utils.FragmentsCommons;
@@ -61,7 +62,7 @@ import static android.widget.Toast.makeText;
  */
 
 
-public class ConnectionsFragment extends FermatFragment implements SearchView.OnCloseListener,
+public class ConnectionsFragment extends AbstractFermatFragment implements SearchView.OnCloseListener,
         SearchView.OnQueryTextListener,
         ActionBar.OnNavigationListener,
         AdapterView.OnItemClickListener,
@@ -121,8 +122,8 @@ public class ConnectionsFragment extends FermatFragment implements SearchView.On
 
             setHasOptionsMenu(true);
             // setting up  module
-            moduleManager = ((IntraUserSubAppSession) subAppsSession).getIntraUserModuleManager();
-            errorManager = subAppsSession.getErrorManager();
+            moduleManager = ((IntraUserSubAppSession) appSession).getModuleManager();
+            errorManager = appSession.getErrorManager();
 
             mNotificationsCount = moduleManager.getIntraUsersWaitingYourAcceptanceCount();
 
@@ -154,7 +155,7 @@ public class ConnectionsFragment extends FermatFragment implements SearchView.On
 
         try {
 
-            rootView = inflater.inflate(R.layout.world_main, container, false);
+            rootView = inflater.inflate(R.layout.fragment_connections_world, container, false);
             setUpScreen(inflater);
             recyclerView = (RecyclerView) rootView.findViewById(R.id.gridView);
             recyclerView.setHasFixedSize(true);
@@ -170,7 +171,6 @@ public class ConnectionsFragment extends FermatFragment implements SearchView.On
 
             rootView.setBackgroundColor(Color.parseColor("#000b12"));
 
-            empty = (LinearLayout) rootView.findViewById(R.id.empty);
             emptyView = (LinearLayout) rootView.findViewById(R.id.empty_view);
             showEmpty(true, rootView);
             //onRefresh();
@@ -199,16 +199,7 @@ public class ConnectionsFragment extends FermatFragment implements SearchView.On
     }
 
     private void setUpScreen(LayoutInflater layoutInflater) throws CantGetActiveLoginIdentityException {
-        /**
-         * add navigation header
-         */
-        addNavigationHeader(FragmentsCommons.setUpHeaderScreen(layoutInflater, getActivity(), intraUserSubAppSession.getIntraUserModuleManager().getActiveIntraUserIdentity()));
 
-        /**
-         * Navigation view items
-         */
-        NavigationViewAdapter navigationViewAdapter = new NavigationViewAdapter(getActivity(),null);
-        setNavigationDrawer(navigationViewAdapter);
     }
     @Override
     public void onRefresh() {
@@ -295,14 +286,14 @@ public class ConnectionsFragment extends FermatFragment implements SearchView.On
 
             // Esto podria ser un enum de item menu que correspondan a otro menu
             if (itemTitle.equals("New Identity")) {
-                changeActivity(Activities.CWP_INTRA_USER_CREATE_ACTIVITY.getCode(), subAppsSession.getAppPublicKey());
+                changeActivity(Activities.CWP_INTRA_USER_CREATE_ACTIVITY.getCode(), appSession.getAppPublicKey());
 
             }
 //            if(id == R.id.action_connection_request){
 //                Toast.makeText(getActivity(),"Intra user request",Toast.LENGTH_SHORT).show();
 //            }
             if (item.getItemId() == R.id.action_notifications) {
-                changeActivity(Activities.CCP_SUB_APP_INTRA_USER_COMMUNITY_REQUEST.getCode(), subAppsSession.getAppPublicKey());
+                changeActivity(Activities.CCP_SUB_APP_INTRA_USER_COMMUNITY_REQUEST.getCode(), appSession.getAppPublicKey());
                 return true;
             }
 
@@ -417,7 +408,7 @@ Updates the count of notifications in the ActionBar.
     public void onItemClickListener(IntraUserInformation data, int position) {
         ConnectDialog connectDialog = null;
         try {
-            connectDialog = new ConnectDialog(getActivity(), (IntraUserSubAppSession) subAppsSession, subAppResourcesProviderManager, data, moduleManager.getActiveIntraUserIdentity());
+            connectDialog = new ConnectDialog(getActivity(), (IntraUserSubAppSession) appSession, (SubAppResourcesProviderManager) appResourcesProviderManager, data, moduleManager.getActiveIntraUserIdentity());
             connectDialog.show();
         } catch (CantGetActiveLoginIdentityException e) {
             e.printStackTrace();

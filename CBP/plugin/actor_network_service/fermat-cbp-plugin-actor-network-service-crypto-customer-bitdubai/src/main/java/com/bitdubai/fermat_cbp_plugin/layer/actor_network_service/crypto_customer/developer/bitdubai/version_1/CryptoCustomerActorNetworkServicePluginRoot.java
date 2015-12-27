@@ -45,8 +45,8 @@ import com.bitdubai.fermat_cbp_plugin.layer.actor_network_service.crypto_custome
 import com.bitdubai.fermat_cbp_plugin.layer.actor_network_service.crypto_customer.developer.bitdubai.version_1.structure.CryptoCustomerActorNetworkServiceManager;
 import com.bitdubai.fermat_p2p_api.layer.all_definition.common.network_services.abstract_classes.AbstractNetworkService;
 import com.bitdubai.fermat_p2p_api.layer.all_definition.common.network_services.exceptions.CantLoadKeyPairException;
-import com.bitdubai.fermat_p2p_api.layer.all_definition.common.network_services.template.database.CommunicationNetworkServiceDatabaseConstants;
-import com.bitdubai.fermat_p2p_api.layer.all_definition.common.network_services.template.database.CommunicationNetworkServiceDatabaseFactory;
+import com.bitdubai.fermat_p2p_api.layer.all_definition.common.network_services.template.communications.CommunicationNetworkServiceDatabaseConstants;
+import com.bitdubai.fermat_p2p_api.layer.all_definition.common.network_services.template.communications.CommunicationNetworkServiceDatabaseFactory;
 import com.bitdubai.fermat_p2p_api.layer.all_definition.common.network_services.template.exceptions.CantInitializeNetworkServiceDatabaseException;
 import com.bitdubai.fermat_p2p_api.layer.all_definition.communication.enums.P2pEventType;
 import com.bitdubai.fermat_p2p_api.layer.all_definition.communication.events.ClientConnectionCloseNotificationEvent;
@@ -55,8 +55,8 @@ import com.bitdubai.fermat_p2p_api.layer.p2p_communication.WsCommunicationsCloud
 import com.bitdubai.fermat_p2p_api.layer.p2p_communication.commons.client.CommunicationsClientConnection;
 import com.bitdubai.fermat_p2p_api.layer.p2p_communication.commons.contents.FermatMessage;
 import com.bitdubai.fermat_p2p_api.layer.p2p_communication.commons.exceptions.CantRequestListException;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedPluginExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedPluginExceptionSeverity;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.interfaces.EventManager;
 
 import java.util.ArrayList;
@@ -410,7 +410,8 @@ public class CryptoCustomerActorNetworkServicePluginRoot extends AbstractNetwork
                 errorManager,
                 eventManager,
                 this.getEventSource(),
-                getPluginVersionReference()
+                getPluginVersionReference(),
+                this
         );
     }
 
@@ -430,7 +431,7 @@ public class CryptoCustomerActorNetworkServicePluginRoot extends AbstractNetwork
 
     /**
      * (non-javadoc)
-     * @see NetworkService#constructDiscoveryQueryParamsFactory(PlatformComponentType, NetworkServiceType, String, String, Location, Double, String, String, Integer, Integer, PlatformComponentType, NetworkServiceType)
+     * @see NetworkService#constructDiscoveryQueryParamsFactory(PlatformComponentType, NetworkServiceType,  String, String, Location, Double, String, String, Integer, Integer, PlatformComponentType, NetworkServiceType)
      */
     @Override
     public DiscoveryQueryParameters constructDiscoveryQueryParamsFactory(final PlatformComponentType platformComponentType         ,
@@ -491,7 +492,8 @@ public class CryptoCustomerActorNetworkServicePluginRoot extends AbstractNetwork
 
         if(fermatEvent instanceof ClientConnectionCloseNotificationEvent){
             this.register = false;
-            communicationNetworkServiceConnectionManager.closeAllConnection();
+            if(communicationNetworkServiceConnectionManager!=null)
+                communicationNetworkServiceConnectionManager.closeAllConnection();
         }
 
     }
@@ -523,19 +525,14 @@ public class CryptoCustomerActorNetworkServicePluginRoot extends AbstractNetwork
      */
     @Override
     public void handleVpnConnectionCloseNotificationEvent(FermatEvent fermatEvent) {
-
         if(fermatEvent instanceof VPNConnectionCloseNotificationEvent){
-
             VPNConnectionCloseNotificationEvent vpnConnectionCloseNotificationEvent = (VPNConnectionCloseNotificationEvent) fermatEvent;
-
             if(vpnConnectionCloseNotificationEvent.getNetworkServiceApplicant() == getNetworkServiceType()){
-
-                communicationNetworkServiceConnectionManager.closeConnection(vpnConnectionCloseNotificationEvent.getRemoteParticipant().getIdentityPublicKey());
-
+                if(communicationNetworkServiceConnectionManager!=null){
+                    communicationNetworkServiceConnectionManager.closeConnection(vpnConnectionCloseNotificationEvent.getRemoteParticipant().getIdentityPublicKey());
+                }
             }
-
         }
-
     }
 
 

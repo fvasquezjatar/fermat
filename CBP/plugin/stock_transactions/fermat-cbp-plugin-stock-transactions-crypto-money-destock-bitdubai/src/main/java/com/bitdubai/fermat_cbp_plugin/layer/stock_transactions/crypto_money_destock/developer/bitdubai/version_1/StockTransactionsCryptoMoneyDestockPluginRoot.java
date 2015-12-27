@@ -5,6 +5,7 @@ import com.bitdubai.fermat_api.FermatException;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.abstract_classes.AbstractPlugin;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.annotations.NeededAddonReference;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.annotations.NeededPluginReference;
+import com.bitdubai.fermat_api.layer.all_definition.common.system.interfaces.FermatManager;
 import com.bitdubai.fermat_api.layer.all_definition.common.system.utils.PluginVersionReference;
 import com.bitdubai.fermat_api.layer.all_definition.developer.DatabaseManagerForDevelopers;
 import com.bitdubai.fermat_api.layer.all_definition.developer.DeveloperDatabase;
@@ -13,21 +14,20 @@ import com.bitdubai.fermat_api.layer.all_definition.developer.DeveloperDatabaseT
 import com.bitdubai.fermat_api.layer.all_definition.developer.DeveloperObjectFactory;
 import com.bitdubai.fermat_api.layer.all_definition.enums.Addons;
 import com.bitdubai.fermat_api.layer.all_definition.enums.CryptoCurrency;
-import com.bitdubai.fermat_api.layer.all_definition.enums.FiatCurrency;
 import com.bitdubai.fermat_api.layer.all_definition.enums.Layers;
 import com.bitdubai.fermat_api.layer.all_definition.enums.Platforms;
 import com.bitdubai.fermat_api.layer.all_definition.enums.Plugins;
 import com.bitdubai.fermat_api.layer.all_definition.enums.ServiceStatus;
 import com.bitdubai.fermat_api.layer.all_definition.util.Version;
-import com.bitdubai.fermat_api.layer.dmp_world.wallet.exceptions.CantStartAgentException;
+import com.bitdubai.fermat_api.CantStartAgentException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.Database;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.PluginDatabaseSystem;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantCreateDatabaseException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.CantOpenDatabaseException;
 import com.bitdubai.fermat_api.layer.osa_android.database_system.exceptions.DatabaseNotFoundException;
 import com.bitdubai.fermat_api.layer.osa_android.file_system.PluginFileSystem;
+import com.bitdubai.fermat_cbp_api.all_definition.enums.OriginTransaction;
 import com.bitdubai.fermat_cbp_api.all_definition.enums.TransactionStatusRestockDestock;
-import com.bitdubai.fermat_cbp_api.layer.cbp_stock_transactions.bank_money_restock.exceptions.CantCreateBankMoneyRestockException;
 import com.bitdubai.fermat_cbp_api.layer.stock_transactions.crypto_money_destock.exceptions.CantCreateCryptoMoneyDestockException;
 import com.bitdubai.fermat_cbp_api.layer.stock_transactions.crypto_money_destock.interfaces.CryptoMoneyDestockManager;
 import com.bitdubai.fermat_cbp_api.layer.wallet.crypto_broker.interfaces.CryptoBrokerWalletManager;
@@ -40,8 +40,8 @@ import com.bitdubai.fermat_cbp_plugin.layer.stock_transactions.crypto_money_dest
 import com.bitdubai.fermat_cbp_plugin.layer.stock_transactions.crypto_money_destock.developer.bitdubai.version_1.structure.StockTransactionCryptoMoneyDestockManager;
 import com.bitdubai.fermat_cbp_plugin.layer.stock_transactions.crypto_money_destock.developer.bitdubai.version_1.structure.events.StockTransactionsCryptoMoneyDestockMonitorAgent;
 import com.bitdubai.fermat_ccp_api.layer.crypto_transaction.hold.interfaces.CryptoHoldTransactionManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedPluginExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedPluginExceptionSeverity;
 import com.bitdubai.fermat_pip_api.layer.platform_service.event_manager.interfaces.EventManager;
 
 import java.sql.Timestamp;
@@ -52,9 +52,6 @@ import java.util.UUID;
  * Created by franklin on 16/11/15.
  */
 public class StockTransactionsCryptoMoneyDestockPluginRoot extends AbstractPlugin  implements
-        //TODO: Documentar y manejo de excepciones.
-        //TODO: Manejo de Eventos
-        CryptoMoneyDestockManager,
         DatabaseManagerForDevelopers {
 
 
@@ -76,8 +73,7 @@ public class StockTransactionsCryptoMoneyDestockPluginRoot extends AbstractPlugi
     @NeededAddonReference(platform = Platforms.PLUG_INS_PLATFORM, layer = Layers.PLATFORM_SERVICE, addon = Addons.EVENT_MANAGER)
     private EventManager eventManager;
 
-    //TODO:Descomentar luego que esten arrancados estos Plugines: plugin = Plugins.CRYPTO_WALLET
-    //@NeededPluginReference(platform = Platforms.CRYPTO_BROKER_PLATFORM, layer = Layers.WALLET, plugin = Plugins.CRYPTO_WALLET)
+    @NeededPluginReference(platform = Platforms.CRYPTO_BROKER_PLATFORM, layer = Layers.WALLET, plugin = Plugins.CRYPTO_BROKER_WALLET)
     CryptoBrokerWalletManager cryptoBrokerWalletManager;
 
     @NeededPluginReference(platform = Platforms.CRYPTO_CURRENCY_PLATFORM, layer = Layers.TRANSACTION, plugin = Plugins.BITCOIN_HOLD)
@@ -91,7 +87,7 @@ public class StockTransactionsCryptoMoneyDestockPluginRoot extends AbstractPlugi
 
             //Buscar la manera de arrancar el agente solo cuando hayan transacciones diferentes a COMPLETED
             System.out.println("******* Init Crypto Money Destock ******");
-            //testDestock();
+
             startMonitorAgent();
 
             database.closeDatabase();
@@ -120,6 +116,11 @@ public class StockTransactionsCryptoMoneyDestockPluginRoot extends AbstractPlugi
     }
 
     @Override
+    public FermatManager getManager() {
+        return stockTransactionCryptoMoneyDestockManager;
+    }
+
+    @Override
     public List<DeveloperDatabase> getDatabaseList(DeveloperObjectFactory developerObjectFactory) {
         StockTransactionsCryptoMoneyDestockDeveloperFactory stockTransactionsCryptoMoneyDestockDeveloperFactory = new StockTransactionsCryptoMoneyDestockDeveloperFactory(pluginDatabaseSystem, pluginId);
         return stockTransactionsCryptoMoneyDestockDeveloperFactory.getDatabaseList(developerObjectFactory);
@@ -145,32 +146,6 @@ public class StockTransactionsCryptoMoneyDestockPluginRoot extends AbstractPlugi
     }
 
 
-    @Override
-    public void createTransactionDestock(String publicKeyActor, CryptoCurrency cryptoCurrency, String cbpWalletPublicKey, String cryWalletPublicKey, float amount, String memo) throws CantCreateCryptoMoneyDestockException {
-        java.util.Date date = new java.util.Date();
-        Timestamp timestamp = new Timestamp(date.getTime());
-        CryptoMoneyDestockTransactionImpl cryptoMoneyRestockTransaction = new CryptoMoneyDestockTransactionImpl(
-                UUID.randomUUID(),
-                publicKeyActor,
-                cryptoCurrency,
-                cbpWalletPublicKey,
-                cryWalletPublicKey,
-                memo,
-                "INIT TRANSACTION",
-                amount,
-                timestamp,
-                TransactionStatusRestockDestock.INIT_TRANSACTION);
-
-        try {
-            stockTransactionCryptoMoneyDestockManager.saveCryptoMoneyDestockTransactionData(cryptoMoneyRestockTransaction);
-        } catch (DatabaseOperationException e) {
-            e.printStackTrace();
-        } catch (MissingCryptoMoneyDestockDataException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     private StockTransactionsCryptoMoneyDestockMonitorAgent stockTransactionsCryptoMoneyDestockMonitorAgent;
     /**
      * This method will start the Monitor Agent that watches the asyncronic process registered in the bank money restock plugin
@@ -182,18 +157,13 @@ public class StockTransactionsCryptoMoneyDestockPluginRoot extends AbstractPlugi
                     errorManager,
                     stockTransactionCryptoMoneyDestockManager,
                     cryptoBrokerWalletManager,
-                    cryptoHoldTransactionManager
+                    cryptoHoldTransactionManager,
+                    pluginDatabaseSystem,
+                    pluginId
             );
 
             stockTransactionsCryptoMoneyDestockMonitorAgent.start();
         }else stockTransactionsCryptoMoneyDestockMonitorAgent.start();
     }
 
-    private void testDestock(){
-        try {
-            createTransactionDestock("publicKeyActor", CryptoCurrency.CHAVEZCOIN, "cbpWalletPublicKey", "cryWalletPublicKey", 250, "memo");
-        } catch (CantCreateCryptoMoneyDestockException e) {
-            e.printStackTrace();
-        }
-    }
 }

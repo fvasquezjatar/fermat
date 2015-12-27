@@ -18,7 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.bitdubai.fermat_android_api.engine.DesktopHolderClickCallback;
-import com.bitdubai.fermat_android_api.layer.definition.wallet.FermatFragment;
+import com.bitdubai.fermat_android_api.layer.definition.wallet.AbstractFermatFragment;
 import com.bitdubai.fermat_android_api.ui.interfaces.FermatWorkerCallBack;
 import com.bitdubai.fermat_android_api.ui.util.FermatWorker;
 import com.bitdubai.fermat_api.FermatException;
@@ -28,8 +28,8 @@ import com.bitdubai.fermat_api.layer.desktop.Item;
 import com.bitdubai.fermat_api.layer.dmp_engine.sub_app_runtime.enums.SubApps;
 import com.bitdubai.fermat_api.layer.dmp_module.wallet_manager.InstalledWallet;
 import com.bitdubai.fermat_api.layer.dmp_module.wallet_manager.WalletManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.ErrorManager;
-import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.UnexpectedUIExceptionSeverity;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.interfaces.ErrorManager;
+import com.bitdubai.fermat_pip_api.layer.platform_service.error_manager.enums.UnexpectedUIExceptionSeverity;
 import com.bitdubai.sub_app.manager.R;
 import com.bitdubai.sub_app.manager.fragment.provisory_classes.InstalledSubApp;
 import com.bitdubai.sub_app.manager.fragment.session.DesktopSession;
@@ -52,7 +52,7 @@ import static android.widget.Toast.makeText;
  */
 
 
-public class DesktopSubAppFragment extends FermatFragment implements SearchView.OnCloseListener,
+public class DesktopSubAppFragment extends AbstractFermatFragment implements SearchView.OnCloseListener,
         SearchView.OnQueryTextListener,
         SwipeRefreshLayout.OnRefreshListener,
         OnStartDragListener,
@@ -110,9 +110,9 @@ public class DesktopSubAppFragment extends FermatFragment implements SearchView.
         try {
 
             // setting up  module
-            //desktopSession = ((DesktopSession) subAppsSession);
+            //desktopSession = ((DesktopSession) appSession);
             //moduleManager = desktopSession.getModuleManager();
-            //errorManager = subAppsSession.getErrorManager();
+            //errorManager = appSession.getErrorManager();
 
 //            //get search name if
 //            searchName = getFermatScreenSwapper().connectBetweenAppsData()[0].toString();
@@ -151,6 +151,9 @@ public class DesktopSubAppFragment extends FermatFragment implements SearchView.
    //         Toast.makeText(getActivity().getApplicationContext(), "Oooops! recovering from system error", Toast.LENGTH_SHORT).show();
             ex.printStackTrace();
 
+        } catch (OutOfMemoryError error){
+            System.gc();
+            error.printStackTrace();
         }
 
 
@@ -305,17 +308,17 @@ public class DesktopSubAppFragment extends FermatFragment implements SearchView.
 
             InstalledSubApp installedSubApp = new InstalledSubApp(SubApps.CWP_WALLET_FACTORY,null,null,"wallet_factory","Wallet Factory","public_key_factory","wallet_factory",new Version(1,0,0));
             Item item = new Item(installedSubApp);
-            item.setIconResource(R.drawable.wallet_factory_icon);
+            item.setIconResource(R.drawable.wallet_factory);
             item.setPosition(0);
             lstItemsWithIcon.add(item);
             installedSubApp = new InstalledSubApp(SubApps.CWP_WALLET_PUBLISHER,null,null,"wallet_publisher","Wallet Publisher","public_key_publisher","wallet_publisher",new Version(1,0,0));
             item = new Item(installedSubApp);
-            item.setIconResource(R.drawable.wallet_publisher_icon);
+            item.setIconResource(R.drawable.wallet_publisher);
             item.setPosition(1);
             lstItemsWithIcon.add(item);
             installedSubApp = new InstalledSubApp(SubApps.DAP_ASSETS_FACTORY, null, null, "sub-app-asset-factory", "Asset Factory", "public_key_dap_factory", "sub-app-asset-factory", new Version(1, 0, 0));
             item = new Item(installedSubApp);
-            item.setIconResource(R.drawable.wallet_factory_icon);
+            item.setIconResource(R.drawable.asset_factory);
             item.setPosition(2);
             lstItemsWithIcon.add(item);
             installedSubApp = new InstalledSubApp(SubApps.CWP_DEVELOPER_APP,null,null,"developer_sub_app","Developer Tools","public_key_pip_developer_sub_app","developer_sub_app",new Version(1,0,0));
